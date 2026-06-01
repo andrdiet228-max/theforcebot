@@ -8,7 +8,8 @@ from telegram.ext import (
     ContextTypes, PollAnswerHandler
 )
 
-TOKEN = "ВАШ_ТОКЕН"
+import os
+TOKEN = os.getenv("8905147513:AAEfEXBjIvC-BJrkyp4Bm1LO57xGentsyjg")
 
 logging.basicConfig(level=logging.INFO)
 
