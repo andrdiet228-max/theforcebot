@@ -9,7 +9,7 @@ from telegram.ext import (
 )
 
 import os
-TOKEN = os.getenv("8905147513:AAEfEXBjIvC-BJrkyp4Bm1LO57xGentsyjg")
+TOKEN = os.getenv("TOKEN")
 
 logging.basicConfig(level=logging.INFO)
 
