@@ -12,7 +12,7 @@ from telegram.ext import (
     ContextTypes, PollAnswerHandler
 )
 
-TOKEN = os.getenv("TOKEN", "")
+TOKEN = os.getenv("TOKEN", "8905147513:AAE6KLipviMXdOjYxiRhNE9vEeiz7PVOa4k")
 logging.basicConfig(level=logging.INFO)
 
 # ─────────────────────────────────────────
