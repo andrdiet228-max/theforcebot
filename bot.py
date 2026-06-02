@@ -5,13 +5,13 @@ import uuid
 import json
 import os
 from datetime import date
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Poll
 from telegram.ext import (
-    Application, CommandHandler, CallbackQueryHandler, ContextTypes
+    Application, CommandHandler, CallbackQueryHandler,
+    ContextTypes, PollAnswerHandler
 )
 
 TOKEN = os.getenv("TOKEN", "8905147513:AAEfEXBjIvC-BJrkyp4Bm1LO57xGentsyjg")
-
 logging.basicConfig(level=logging.INFO)
 
 # ─────────────────────────────────────────
@@ -26,16 +26,20 @@ def init_db():
         streak INTEGER DEFAULT 0, last_play TEXT,
         total INTEGER DEFAULT 0, correct INTEGER DEFAULT 0
     )""")
-    # Миграция: добавить колонки если их нет
-    for col, default in [("coins", "0"), ("total", "0"), ("correct", "0")]:
+    # Миграция старой БД
+    for col, default in [("coins","0"),("total","0"),("correct","0"),("streak","0")]:
         try:
             c.execute(f"ALTER TABLE users ADD COLUMN {col} INTEGER DEFAULT {default}")
-        except:
-            pass
+        except: pass
     c.execute("""CREATE TABLE IF NOT EXISTS sessions (
-        user_id INTEGER PRIMARY KEY,
-        level TEXT, index_ INTEGER DEFAULT 0,
-        coins INTEGER DEFAULT 0, questions TEXT
+        user_id INTEGER PRIMARY KEY, level TEXT,
+        index_ INTEGER DEFAULT 0, coins INTEGER DEFAULT 0, questions TEXT
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS active_polls (
+        poll_id TEXT PRIMARY KEY, user_id INTEGER,
+        correct_id INTEGER, points INTEGER,
+        session_type TEXT DEFAULT 'quiz',
+        duel_id TEXT DEFAULT NULL
     )""")
     c.execute("""CREATE TABLE IF NOT EXISTS user_cards (
         user_id INTEGER, card_id TEXT,
@@ -43,8 +47,7 @@ def init_db():
     )""")
     c.execute("""CREATE TABLE IF NOT EXISTS duels (
         duel_id TEXT PRIMARY KEY,
-        p1_id INTEGER, p2_id INTEGER,
-        level TEXT,
+        p1_id INTEGER, p2_id INTEGER, level TEXT,
         p1_score INTEGER DEFAULT 0, p2_score INTEGER DEFAULT 0,
         p1_index INTEGER DEFAULT 0, p2_index INTEGER DEFAULT 0,
         p1_done INTEGER DEFAULT 0, p2_done INTEGER DEFAULT 0,
@@ -57,7 +60,7 @@ def get_user(user_id, username=""):
     conn = sqlite3.connect("quiz.db")
     c = conn.cursor()
     c.execute("INSERT OR IGNORE INTO users (user_id, username) VALUES (?,?)", (user_id, username))
-    c.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
+    c.execute("SELECT user_id, username, score, coins, streak, last_play, total, correct FROM users WHERE user_id=?", (user_id,))
     row = c.fetchone()
     conn.commit()
     conn.close()
@@ -71,10 +74,12 @@ def add_result(user_id, coins, correct):
     r = c.fetchone()
     streak = (r[0]+1) if r and r[1]==today else 1
     if correct:
-        c.execute("UPDATE users SET coins=coins+?, score=score+?, streak=?, last_play=?, total=total+1, correct=correct+1 WHERE user_id=?",
-                  (coins, coins, streak, today, user_id))
+        c.execute("""UPDATE users SET coins=coins+?, score=score+?, streak=?,
+            last_play=?, total=total+1, correct=correct+1 WHERE user_id=?""",
+            (coins, coins, streak, today, user_id))
     else:
-        c.execute("UPDATE users SET total=total+1, streak=1, last_play=? WHERE user_id=?", (today, user_id))
+        c.execute("UPDATE users SET total=total+1, streak=1, last_play=? WHERE user_id=?",
+            (today, user_id))
     conn.commit()
     conn.close()
 
@@ -129,7 +134,7 @@ def get_session(user_id):
     r = c.fetchone()
     conn.close()
     if r:
-        return {"level": r[1], "index": r[2], "coins": r[3], "questions": json.loads(r[4])}
+        return {"level":r[1],"index":r[2],"coins":r[3],"questions":json.loads(r[4])}
     return None
 
 def del_session(user_id):
@@ -138,6 +143,24 @@ def del_session(user_id):
     c.execute("DELETE FROM sessions WHERE user_id=?", (user_id,))
     conn.commit()
     conn.close()
+
+def save_poll(poll_id, user_id, correct_id, points, session_type="quiz", duel_id=None):
+    conn = sqlite3.connect("quiz.db")
+    c = conn.cursor()
+    c.execute("INSERT OR REPLACE INTO active_polls VALUES (?,?,?,?,?,?)",
+              (poll_id, user_id, correct_id, points, session_type, duel_id))
+    conn.commit()
+    conn.close()
+
+def get_poll(poll_id):
+    conn = sqlite3.connect("quiz.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM active_polls WHERE poll_id=?", (poll_id,))
+    r = c.fetchone()
+    conn.close()
+    if r:
+        return {"poll_id":r[0],"user_id":r[1],"correct_id":r[2],"points":r[3],"type":r[4],"duel_id":r[5]}
+    return None
 
 def get_duel(duel_id):
     conn = sqlite3.connect("quiz.db")
@@ -155,7 +178,7 @@ def update_duel(duel_id, **kwargs):
     conn = sqlite3.connect("quiz.db")
     c = conn.cursor()
     sets = ", ".join(f"{k}=?" for k in kwargs)
-    c.execute(f"UPDATE duels SET {sets} WHERE duel_id=?", list(kwargs.values()) + [duel_id])
+    c.execute(f"UPDATE duels SET {sets} WHERE duel_id=?", list(kwargs.values())+[duel_id])
     conn.commit()
     conn.close()
 
@@ -191,7 +214,7 @@ QUESTIONS = {
         {"q":"Мать Энакина Скайуокера?","o":["Падме","Шми","Бару","Лира"],"a":1,"p":40},
         {"q":"Год Битвы при Явине?","o":["0 BBY","4 BBY","19 BBY","32 BBY"],"a":0,"p":40},
         {"q":"Кто разрушил правило двух ситхов?","o":["Дарт Бейн","Дарт Плэгас","Тенебрус","Сидиус"],"a":0,"p":40},
-        {"q":"Мандалорский кодекс?","o":["Дин Джарин","Резол наре","Бескар","Ковата"],"a":1,"p":40},
+        {"q":"Мандалорский кодекс чести?","o":["Дин Джарин","Резол-наре","Бескар","Ковата"],"a":1,"p":40},
         {"q":"Кто создал армию клонов?","o":["Тиранус","Джанго Фетт","Сайфо-Диас","Камино"],"a":2,"p":40},
         {"q":"Планета скрытия Йоды после Приказа 66?","o":["Хот","Дагоба","Эндор","Набу"],"a":1,"p":40},
         {"q":"Что такое Дарксейбер?","o":["Красный меч","Чёрный меч","Меч Бейна","Артефакт Йоды"],"a":1,"p":40},
@@ -207,7 +230,7 @@ CARDS = {
     "vader":{"name":"Дарт Вейдер","side":"Тёмная","price":100,"emoji":"🔴","quote":"Я — твой отец."},
     "yoda":{"name":"Йода","side":"Светлая","price":80,"emoji":"🟢","quote":"Делай или не делай."},
     "luke":{"name":"Люк Скайуокер","side":"Светлая","price":80,"emoji":"⚔️","quote":"Я джедай."},
-    "obi":{"name":"Оби-Ван Кеноби","side":"Светлая","price":90,"emoji":"🔵","quote":"Да прибудет с тобой Сила."},
+    "obi":{"name":"Оби-Ван Кеноби","side":"Светлая","price":90,"emoji":"🔵","quote":"Да пребудет с тобой Сила."},
     "mando":{"name":"Мандалорец","side":"Нейтральная","price":120,"emoji":"⚙️","quote":"Таков путь."},
     "palp":{"name":"Палпатин","side":"Тёмная","price":150,"emoji":"⚡","quote":"Неограниченная власть!"},
     "maul":{"name":"Дарт Мол","side":"Тёмная","price":110,"emoji":"🖤","quote":"Страдания — пища ситха."},
@@ -222,18 +245,20 @@ def get_rank(score):
     return "⭐ Великий магистр"
 
 # ─────────────────────────────────────────
-# ВОПРОС С КНОПКАМИ
+# ОТПРАВКА ОПРОСА
 # ─────────────────────────────────────────
-def question_keyboard(q, index, total, context_data):
-    """context_data = 'quiz' или 'duel_DUELID_PLAYER'"""
-    buttons = []
-    for i, opt in enumerate(q["o"]):
-        buttons.append([InlineKeyboardButton(opt, callback_data=f"ans_{context_data}_{index}_{i}")])
-    return InlineKeyboardMarkup(buttons)
-
-def question_text(q, index, total, level_name):
-    return (f"*{level_name}* | Вопрос {index+1}/{total}\n\n"
-            f"❓ {q['q']}")
+async def send_poll(context, chat_id, user_id, question, index, total, level, session_type="quiz", duel_id=None):
+    q = question
+    msg = await context.bot.send_poll(
+        chat_id=chat_id,
+        question=f"[{LEVEL_NAMES[level]}] Вопрос {index+1}/{total}\n{q['q']}",
+        options=q["o"],
+        type=Poll.QUIZ,
+        correct_option_id=q["a"],
+        is_anonymous=False,
+        explanation=f"+{q['p']} монет за правильный ответ 🪙"
+    )
+    save_poll(msg.poll.id, user_id, q["a"], q["p"], session_type, duel_id)
 
 # ─────────────────────────────────────────
 # ХЕНДЛЕРЫ
@@ -241,12 +266,12 @@ def question_text(q, index, total, level_name):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username or user.first_name)
-
-    # Проверка на дуэль
     if context.args and context.args[0].startswith("duel_"):
-        await handle_join_duel(update, context, context.args[0].replace("duel_",""))
+        await join_duel_handler(update, context, context.args[0].replace("duel_",""))
         return
+    await show_menu(update.message.reply_text)
 
+async def show_menu(send_func):
     kb = [
         [InlineKeyboardButton("⚔️ Квиз", callback_data="choose_level"),
          InlineKeyboardButton("🤺 Дуэль", callback_data="duel_menu")],
@@ -255,13 +280,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🏆 Топ", callback_data="leaderboard"),
          InlineKeyboardButton("👤 Профиль", callback_data="profile")],
     ]
-    await update.message.reply_text(
-        f"Привет, {user.first_name}! ⚔️\n\n"
-        "*The Force Quiz* — квиз по Звёздным войнам!\n\n"
-        "Отвечай на вопросы → зарабатывай 🪙 монеты → покупай карточки персонажей!\n\n"
-        "Да пребудет с тобой Сила! ✨",
-        reply_markup=InlineKeyboardMarkup(kb),
-        parse_mode="Markdown"
+    await send_func(
+        "⚔️ Главное меню\nДа прибудет с тобой Сила! ✨",
+        reply_markup=InlineKeyboardMarkup(kb)
     )
 
 async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -270,154 +291,6 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
     d = q.data
     user = q.from_user
 
-    # ── ОТВЕТ НА ВОПРОС КВИЗА ──
-    if d.startswith("ans_quiz_"):
-        parts = d.split("_")
-        # ans_quiz_INDEX_CHOSEN
-        index = int(parts[2])
-        chosen = int(parts[3])
-        session = get_session(user.id)
-        if not session or session["index"] != index:
-            await q.answer("Этот вопрос уже пройден!", show_alert=True)
-            return
-        question = session["questions"][index]
-        correct = chosen == question["a"]
-        points = question["p"] if correct else 0
-        add_result(user.id, points, correct)
-        new_coins = session["coins"] + points
-        new_index = index + 1
-        total = len(session["questions"])
-
-        if correct:
-            result_text = f"✅ Верно! +{points} 🪙"
-        else:
-            result_text = f"❌ Неверно. Правильный ответ: *{question['o'][question['a']]}*"
-
-        if new_index >= total:
-            del_session(user.id)
-            kb = [[InlineKeyboardButton("🔄 Ещё раз", callback_data="choose_level"),
-                   InlineKeyboardButton("🏠 Меню", callback_data="menu")]]
-            await q.edit_message_text(
-                f"{result_text}\n\n"
-                f"🏁 *Квиз завершён!*\n"
-                f"Заработано: *{new_coins} монет* 🪙\n\n"
-                f"Итого вопросов: {total}",
-                reply_markup=InlineKeyboardMarkup(kb),
-                parse_mode="Markdown"
-            )
-        else:
-            save_session(user.id, session["level"], new_index, new_coins, session["questions"])
-            next_q = session["questions"][new_index]
-            kb = question_keyboard(next_q, new_index, total, "quiz")
-            await q.edit_message_text(
-                f"{result_text}\n\n" +
-                question_text(next_q, new_index, total, LEVEL_NAMES[session["level"]]),
-                reply_markup=kb,
-                parse_mode="Markdown"
-            )
-        return
-
-    # ── ОТВЕТ НА ВОПРОС ДУЭЛИ ──
-    if d.startswith("ans_duel_"):
-        parts = d.split("_")
-        # ans_duel_DUELID_PLAYER_INDEX_CHOSEN
-        duel_id = parts[2]
-        player = int(parts[3])
-        index = int(parts[4])
-        chosen = int(parts[5])
-
-        if user.id != player:
-            await q.answer("Это не твоя дуэль!", show_alert=True)
-            return
-
-        duel = get_duel(duel_id)
-        if not duel:
-            await q.answer("Дуэль не найдена!", show_alert=True)
-            return
-
-        is_p1 = user.id == duel["p1"]
-        cur_index = duel["p1i"] if is_p1 else duel["p2i"]
-
-        if index != cur_index:
-            await q.answer("Этот вопрос уже пройден!", show_alert=True)
-            return
-
-        question = duel["questions"][index]
-        correct = chosen == question["a"]
-        points = question["p"] if correct else 0
-        add_result(user.id, points, correct)
-
-        total = len(duel["questions"])
-        new_index = index + 1
-        new_score = (duel["p1s"] if is_p1 else duel["p2s"]) + points
-
-        if correct:
-            result_text = f"✅ Верно! +{points} 🪙"
-        else:
-            result_text = f"❌ Неверно. Правильный: *{question['o'][question['a']]}*"
-
-        if is_p1:
-            update_duel(duel_id, p1s=new_score, p1i=new_index, p1d=1 if new_index>=total else 0)
-        else:
-            update_duel(duel_id, p2s=new_score, p2i=new_index, p2d=1 if new_index>=total else 0)
-
-        duel = get_duel(duel_id)
-
-        if new_index >= total:
-            # Этот игрок закончил
-            if duel["p1d"] and duel["p2d"]:
-                # Оба закончили — итог
-                p1s, p2s = duel["p1s"], duel["p2s"]
-                p1 = await context.bot.get_chat(duel["p1"])
-                p2 = await context.bot.get_chat(duel["p2"])
-                if p1s > p2s:
-                    winner, loser = p1.first_name, p2.first_name
-                    win_id, lose_id = duel["p1"], duel["p2"]
-                elif p2s > p1s:
-                    winner, loser = p2.first_name, p1.first_name
-                    win_id, lose_id = duel["p2"], duel["p1"]
-                else:
-                    winner = None
-
-                if winner:
-                    bonus = total * question["p"]
-                    add_result(win_id, bonus, True)
-                    result_msg = (f"⚔️ *Дуэль завершена!*\n\n"
-                                 f"🏆 Победитель: *{winner}*\n"
-                                 f"💀 Проигравший: *{loser}*\n\n"
-                                 f"Счёт: {p1.first_name} {p1s} — {p2s} {p2.first_name}\n"
-                                 f"Бонус победителю: +{bonus} 🪙")
-                else:
-                    result_msg = (f"⚔️ *Дуэль завершена!*\n\n"
-                                 f"🤝 Ничья!\n"
-                                 f"Счёт: {p1.first_name} {p1s} — {p2s} {p2.first_name}")
-
-                kb = [[InlineKeyboardButton("🏠 Меню", callback_data="menu")]]
-                await q.edit_message_text(result_msg, reply_markup=InlineKeyboardMarkup(kb), parse_mode="Markdown")
-                try:
-                    other_id = duel["p2"] if is_p1 else duel["p1"]
-                    await context.bot.send_message(other_id, result_msg, parse_mode="Markdown",
-                                                   reply_markup=InlineKeyboardMarkup(kb))
-                except:
-                    pass
-            else:
-                await q.edit_message_text(
-                    f"{result_text}\n\n⏳ Ты закончил! Ждём соперника...",
-                    parse_mode="Markdown"
-                )
-        else:
-            next_q = duel["questions"][new_index]
-            context_str = f"duel_{duel_id}_{user.id}"
-            kb = question_keyboard(next_q, new_index, total, context_str)
-            await q.edit_message_text(
-                f"{result_text}\n\n" +
-                question_text(next_q, new_index, total, LEVEL_NAMES[duel["level"]]),
-                reply_markup=kb,
-                parse_mode="Markdown"
-            )
-        return
-
-    # ── МЕНЮ ──
     if d == "menu":
         kb = [
             [InlineKeyboardButton("⚔️ Квиз", callback_data="choose_level"),
@@ -427,7 +300,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🏆 Топ", callback_data="leaderboard"),
              InlineKeyboardButton("👤 Профиль", callback_data="profile")],
         ]
-        await q.edit_message_text("⚔️ Главное меню\nДа пребудет с тобой Сила! ✨",
+        await q.edit_message_text("⚔️ Главное меню\nДа прибудет с тобой Сила! ✨",
                                    reply_markup=InlineKeyboardMarkup(kb))
 
     elif d == "choose_level":
@@ -437,33 +310,57 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔴 Мастер джедай — 40 монет", callback_data="quiz_master")],
             [InlineKeyboardButton("◀️ Назад", callback_data="menu")],
         ]
-        await q.edit_message_text("Выбери уровень — 10 вопросов подряд:",
-                                   reply_markup=InlineKeyboardMarkup(kb))
+        await q.edit_message_text("Выбери уровень — 10 вопросов:", reply_markup=InlineKeyboardMarkup(kb))
 
     elif d.startswith("quiz_"):
         level = d.replace("quiz_", "")
         questions = random.sample(QUESTIONS[level], 10)
         save_session(user.id, level, 0, 0, questions)
-        first_q = questions[0]
-        kb = question_keyboard(first_q, 0, 10, "quiz")
-        await q.edit_message_text(
-            question_text(first_q, 0, 10, LEVEL_NAMES[level]),
-            reply_markup=kb,
-            parse_mode="Markdown"
-        )
+        await q.edit_message_text(f"Начинаем! {LEVEL_NAMES[level]}\n10 вопросов. Удачи! 🚀")
+        await send_poll(context, q.message.chat_id, user.id, questions[0], 0, 10, level)
+
+    # ── СЛЕДУЮЩИЙ ВОПРОС КВИЗА ──
+    elif d == "next_question":
+        session = get_session(user.id)
+        if not session:
+            await q.edit_message_text("Сессия не найдена. Начни новый квиз через /start")
+            return
+        index = session["index"]
+        questions = session["questions"]
+        level = session["level"]
+        if index >= len(questions):
+            del_session(user.id)
+            await q.edit_message_text(
+                f"🏁 Квиз завершён!\nЗаработано: {session['coins']} монет 🪙",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Меню", callback_data="menu")]])
+            )
+        else:
+            await q.edit_message_text(f"Вопрос {index+1}/10...")
+            await send_poll(context, q.message.chat_id, user.id, questions[index], index, 10, level)
+
+    # ── СЛЕДУЮЩИЙ ВОПРОС ДУЭЛИ ──
+    elif d.startswith("duel_next_"):
+        duel_id = d.replace("duel_next_", "")
+        duel = get_duel(duel_id)
+        if not duel:
+            return
+        is_p1 = user.id == duel["p1"]
+        index = duel["p1i"] if is_p1 else duel["p2i"]
+        questions = duel["questions"]
+        if index < len(questions):
+            await q.edit_message_text(f"Вопрос {index+1}/5...")
+            await send_poll(context, q.message.chat_id, user.id,
+                           questions[index], index, 5, duel["level"], "duel", duel_id)
 
     elif d == "duel_menu":
         kb = [
             [InlineKeyboardButton("⚔️ Создать дуэль", callback_data="duel_create")],
-            [InlineKeyboardButton("🔗 Ввести код", callback_data="duel_enter_code")],
+            [InlineKeyboardButton("🔗 Ввести код", callback_data="duel_code")],
             [InlineKeyboardButton("◀️ Назад", callback_data="menu")],
         ]
         await q.edit_message_text(
-            "🤺 *Дуэль с другом*\n\n"
-            "Создай дуэль → отправь другу код → оба отвечают на одинаковые вопросы → "
-            "победитель получает бонус! 🪙",
-            reply_markup=InlineKeyboardMarkup(kb),
-            parse_mode="Markdown"
+            "🤺 Дуэль с другом\n\nСоздай дуэль, отправь другу код — кто наберёт больше очков, тот победит!\nПобедитель получает бонусные монеты 🪙",
+            reply_markup=InlineKeyboardMarkup(kb)
         )
 
     elif d == "duel_create":
@@ -472,8 +369,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔵 Рыцарь", callback_data="duel_lvl_jedi")],
             [InlineKeyboardButton("🔴 Мастер", callback_data="duel_lvl_master")],
         ]
-        await q.edit_message_text("Выбери уровень дуэли:",
-                                   reply_markup=InlineKeyboardMarkup(kb))
+        await q.edit_message_text("Выбери уровень дуэли:", reply_markup=InlineKeyboardMarkup(kb))
 
     elif d.startswith("duel_lvl_"):
         level = d.replace("duel_lvl_", "")
@@ -482,26 +378,19 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         conn = sqlite3.connect("quiz.db")
         c = conn.cursor()
         c.execute("INSERT INTO duels VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                  (duel_id, user.id, None, level, 0, 0, 0, 0, 0, 0,
-                   json.dumps(questions), 'waiting'))
+                  (duel_id, user.id, None, level, 0, 0, 0, 0, 0, 0, json.dumps(questions), "waiting"))
         conn.commit()
         conn.close()
         bot_info = await context.bot.get_me()
         link = f"https://t.me/{bot_info.username}?start=duel_{duel_id}"
         await q.edit_message_text(
-            f"⚔️ *Дуэль создана!*\n\n"
-            f"Уровень: {LEVEL_NAMES[level]}\n"
-            f"Код дуэли: `{duel_id}`\n\n"
-            f"Отправь другу:\n{link}\n\n"
-            f"Или пусть напишет боту `/join {duel_id}`",
-            parse_mode="Markdown",
+            f"⚔️ Дуэль создана!\n\nУровень: {LEVEL_NAMES[level]}\nКод: {duel_id}\n\nОтправь другу ссылку:\n{link}\n\nИли пусть напишет: /join {duel_id}",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Меню", callback_data="menu")]])
         )
 
-    elif d == "duel_enter_code":
+    elif d == "duel_code":
         await q.edit_message_text(
-            "Введи команду:\n`/join КОД_ДУЭЛИ`",
-            parse_mode="Markdown",
+            "Введи команду:\n/join КОД",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Назад", callback_data="duel_menu")]])
         )
 
@@ -514,16 +403,13 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if cid in owned:
                 kb.append([InlineKeyboardButton(f"✅ {card['emoji']} {card['name']}", callback_data=f"card_{cid}")])
             else:
-                kb.append([InlineKeyboardButton(f"{card['emoji']} {card['name']} — {card['price']}🪙", callback_data=f"buy_{cid}")])
+                kb.append([InlineKeyboardButton(f"{card['emoji']} {card['name']} — {card['price']} монет", callback_data=f"buy_{cid}")])
         kb.append([InlineKeyboardButton("◀️ Меню", callback_data="menu")])
-        await q.edit_message_text(
-            f"🛒 *Магазин карточек*\n💰 У тебя: *{coins} монет*\n\nВыбери карточку:",
-            reply_markup=InlineKeyboardMarkup(kb),
-            parse_mode="Markdown"
-        )
+        await q.edit_message_text(f"🛒 Магазин карточек\nУ тебя: {coins} монет 🪙",
+                                   reply_markup=InlineKeyboardMarkup(kb))
 
     elif d.startswith("buy_"):
-        cid = d.replace("buy_", "")
+        cid = d.replace("buy_","")
         card = CARDS[cid]
         if cid in get_cards(user.id):
             await q.answer("Уже есть!", show_alert=True)
@@ -533,7 +419,6 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await q.answer(f"✅ {card['name']} добавлена в коллекцию!", show_alert=True)
         else:
             await q.answer("❌ Недостаточно монет!", show_alert=True)
-        # Обновить магазин
         row = get_user(user.id)
         coins = row[3]
         owned = get_cards(user.id)
@@ -542,85 +427,182 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if c_id in owned:
                 kb.append([InlineKeyboardButton(f"✅ {c['emoji']} {c['name']}", callback_data=f"card_{c_id}")])
             else:
-                kb.append([InlineKeyboardButton(f"{c['emoji']} {c['name']} — {c['price']}🪙", callback_data=f"buy_{c_id}")])
+                kb.append([InlineKeyboardButton(f"{c['emoji']} {c['name']} — {c['price']} монет", callback_data=f"buy_{c_id}")])
         kb.append([InlineKeyboardButton("◀️ Меню", callback_data="menu")])
-        await q.edit_message_text(
-            f"🛒 *Магазин карточек*\n💰 У тебя: *{coins} монет*\n\nВыбери карточку:",
-            reply_markup=InlineKeyboardMarkup(kb),
-            parse_mode="Markdown"
-        )
+        await q.edit_message_text(f"🛒 Магазин карточек\nУ тебя: {coins} монет 🪙",
+                                   reply_markup=InlineKeyboardMarkup(kb))
 
     elif d.startswith("card_"):
-        cid = d.replace("card_", "")
+        cid = d.replace("card_","")
         card = CARDS[cid]
         await q.edit_message_text(
-            f"{card['emoji']} *{card['name']}*\n\n"
-            f"🌌 Сторона: {card['side']}\n"
-            f"💬 _«{card['quote']}»_",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Назад", callback_data="collection")]]),
-            parse_mode="Markdown"
+            f"{card['emoji']} {card['name']}\n\nСторона: {card['side']}\n\n{card['quote']}",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Назад", callback_data="collection")]])
         )
 
     elif d == "collection":
         owned = get_cards(user.id)
         if not owned:
             await q.edit_message_text(
-                "🎴 *Коллекция пуста*\n\nЗарабатывай монеты и покупай карточки в магазине!",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🛒 Магазин", callback_data="shop")],
-                                                   [InlineKeyboardButton("◀️ Меню", callback_data="menu")]]),
-                parse_mode="Markdown"
+                "🎴 Коллекция пуста\n\nЗарабатывай монеты и покупай карточки в магазине!",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🛒 Магазин", callback_data="shop")],
+                    [InlineKeyboardButton("◀️ Меню", callback_data="menu")]
+                ])
             )
         else:
             kb = [[InlineKeyboardButton(f"{CARDS[cid]['emoji']} {CARDS[cid]['name']}", callback_data=f"card_{cid}")] for cid in owned]
             kb.append([InlineKeyboardButton("◀️ Меню", callback_data="menu")])
-            await q.edit_message_text(
-                f"🎴 *Моя коллекция* ({len(owned)}/{len(CARDS)})",
-                reply_markup=InlineKeyboardMarkup(kb),
-                parse_mode="Markdown"
-            )
+            await q.edit_message_text(f"🎴 Моя коллекция ({len(owned)}/{len(CARDS)})",
+                                       reply_markup=InlineKeyboardMarkup(kb))
 
     elif d == "leaderboard":
         rows = get_leaderboard()
         medals = ["🥇","🥈","🥉"]+["▫️"]*7
-        text = "🏆 *Таблица лидеров*\n\n"
+        text = "🏆 Таблица лидеров\n\n"
         for i,(name,score,cor,tot) in enumerate(rows):
             acc = f"{round(cor/tot*100)}%" if tot>0 else "—"
-            text += f"{medals[i]} {name} — *{score}* 🪙 ({acc})\n"
+            text += f"{medals[i]} {name} — {score} монет ({acc})\n"
         if not rows: text += "Пока никого нет!"
         await q.edit_message_text(text,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Меню", callback_data="menu")]]),
-            parse_mode="Markdown")
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Меню", callback_data="menu")]]))
 
     elif d == "profile":
         row = get_user(user.id)
-        name, score, coins, streak, lp, total, correct = row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+        uid, name, score, coins, streak, lp, total, correct = row
         acc = f"{round(correct/total*100)}%" if total>0 else "—"
         owned = get_cards(user.id)
         await q.edit_message_text(
-            f"👤 *{name}*\n\n"
+            f"👤 {name}\n\n"
             f"🎖 {get_rank(score)}\n"
             f"⭐ Очки: {score}\n"
             f"🪙 Монеты: {coins}\n"
-            f"📊 Точность: {acc}\n"
+            f"📊 Точность: {acc} ({correct}/{total})\n"
             f"🔥 Стрик: {streak} дн.\n"
             f"🎴 Карточки: {len(owned)}/{len(CARDS)}",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("⚔️ Квиз", callback_data="choose_level")],
                 [InlineKeyboardButton("◀️ Меню", callback_data="menu")],
-            ]),
-            parse_mode="Markdown"
+            ])
         )
 
-async def handle_join_duel(update, context, duel_id):
+# ─────────────────────────────────────────
+# ОБРАБОТКА ОТВЕТА НА ОПРОС
+# ─────────────────────────────────────────
+async def poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    answer = update.poll_answer
+    poll_id = answer.poll_id
+    user_id = answer.user.id
+    chosen = answer.option_ids[0] if answer.option_ids else -1
+
+    poll = get_poll(poll_id)
+    if not poll:
+        return
+
+    is_correct = chosen == poll["correct_id"]
+    points = poll["points"] if is_correct else 0
+
+    if poll["type"] == "quiz":
+        session = get_session(user_id)
+        if not session:
+            return
+        add_result(user_id, points, is_correct)
+        new_coins = session["coins"] + points
+        new_index = session["index"] + 1
+        save_session(user_id, session["level"], new_index, new_coins, session["questions"])
+
+        if is_correct:
+            result = f"✅ Верно! +{points} монет 🪙"
+        else:
+            q = session["questions"][session["index"]]
+            result = f"❌ Неверно. Правильный ответ: {q['o'][q['a']]}"
+
+        if new_index >= len(session["questions"]):
+            kb = [[InlineKeyboardButton("🔄 Ещё раз", callback_data="choose_level"),
+                   InlineKeyboardButton("🏠 Меню", callback_data="menu")]]
+            text = f"{result}\n\n🏁 Квиз завершён!\nЗаработано: {new_coins} монет 🪙"
+        else:
+            kb = [[InlineKeyboardButton(f"Следующий вопрос {new_index+1}/10 ➡️", callback_data="next_question")]]
+            text = f"{result}\n\nВопрос {session['index']+1} из {len(session['questions'])} пройден."
+
+        try:
+            await context.bot.send_message(user_id, text, reply_markup=InlineKeyboardMarkup(kb))
+        except Exception as e:
+            logging.error(f"poll_answer error: {e}")
+
+    elif poll["type"] == "duel":
+        duel_id = poll["duel_id"]
+        duel = get_duel(duel_id)
+        if not duel:
+            return
+        add_result(user_id, points, is_correct)
+        is_p1 = user_id == duel["p1"]
+        cur_score = (duel["p1s"] if is_p1 else duel["p2s"]) + points
+        new_index = (duel["p1i"] if is_p1 else duel["p2i"]) + 1
+        done = 1 if new_index >= len(duel["questions"]) else 0
+
+        if is_p1:
+            update_duel(duel_id, p1s=cur_score, p1i=new_index, p1d=done)
+        else:
+            update_duel(duel_id, p2s=cur_score, p2i=new_index, p2d=done)
+
+        duel = get_duel(duel_id)
+
+        if is_correct:
+            result = f"✅ Верно! +{points} монет 🪙"
+        else:
+            q = duel["questions"][new_index-1]
+            result = f"❌ Неверно. Правильный: {q['o'][q['a']]}"
+
+        if done:
+            if duel["p1d"] and duel["p2d"]:
+                # Оба закончили
+                p1s, p2s = duel["p1s"], duel["p2s"]
+                try:
+                    p1_chat = await context.bot.get_chat(duel["p1"])
+                    p2_chat = await context.bot.get_chat(duel["p2"])
+                    p1_name = p1_chat.first_name
+                    p2_name = p2_chat.first_name
+                except:
+                    p1_name, p2_name = "Игрок 1", "Игрок 2"
+
+                if p1s > p2s:
+                    res = f"🏆 Победил {p1_name}!\n{p1_name}: {p1s} — {p2s} :{p2_name}"
+                    add_result(duel["p1"], 50, True)
+                elif p2s > p1s:
+                    res = f"🏆 Победил {p2_name}!\n{p1_name}: {p1s} — {p2s} :{p2_name}"
+                    add_result(duel["p2"], 50, True)
+                else:
+                    res = f"🤝 Ничья!\n{p1_name}: {p1s} — {p2s} :{p2_name}"
+
+                kb = [[InlineKeyboardButton("🏠 Меню", callback_data="menu")]]
+                for pid in [duel["p1"], duel["p2"]]:
+                    try:
+                        await context.bot.send_message(pid, f"⚔️ Дуэль завершена!\n\n{res}", reply_markup=InlineKeyboardMarkup(kb))
+                    except: pass
+            else:
+                try:
+                    await context.bot.send_message(user_id, f"{result}\n\nТы закончил! Ждём соперника... ⏳")
+                except: pass
+        else:
+            kb = [[InlineKeyboardButton(f"Следующий вопрос {new_index+1}/5 ➡️", callback_data=f"duel_next_{duel_id}")]]
+            try:
+                await context.bot.send_message(user_id, f"{result}", reply_markup=InlineKeyboardMarkup(kb))
+            except: pass
+
+# ─────────────────────────────────────────
+# ПРИСОЕДИНЕНИЕ К ДУЭЛИ
+# ─────────────────────────────────────────
+async def join_duel_handler(update, context, duel_id):
     user = update.effective_user
     get_user(user.id, user.username or user.first_name)
     duel = get_duel(duel_id)
 
     if not duel:
-        await update.message.reply_text("❌ Дуэль не найдена.")
+        await update.message.reply_text("❌ Дуэль не найдена. Проверь код.")
         return
     if duel["status"] != "waiting":
-        await update.message.reply_text("❌ Дуэль уже начата.")
+        await update.message.reply_text("❌ Дуэль уже началась.")
         return
     if duel["p1"] == user.id:
         await update.message.reply_text("❌ Нельзя присоединиться к своей дуэли!")
@@ -628,40 +610,30 @@ async def handle_join_duel(update, context, duel_id):
 
     update_duel(duel_id, p2_id=user.id, status="active")
     duel = get_duel(duel_id)
-
     level = duel["level"]
     questions = duel["questions"]
-    total = len(questions)
-    first_q = questions[0]
 
-    p1_name = (await context.bot.get_chat(duel["p1"])).first_name
+    try:
+        p1_name = (await context.bot.get_chat(duel["p1"])).first_name
+    except:
+        p1_name = "соперник"
 
-    # Уведомить p1
-    context_p1 = f"duel_{duel_id}_{duel['p1']}"
-    kb_p1 = question_keyboard(first_q, 0, total, context_p1)
-    await context.bot.send_message(
-        duel["p1"],
-        f"⚔️ *{user.first_name}* принял вызов! Начинаем!\n\n" +
-        question_text(first_q, 0, total, LEVEL_NAMES[level]),
-        reply_markup=kb_p1,
-        parse_mode="Markdown"
-    )
+    # Отправить первый вопрос обоим
+    kb = [[InlineKeyboardButton("Следующий вопрос 1/5 ➡️", callback_data=f"duel_next_{duel_id}")]]
 
-    # Отправить p2
-    context_p2 = f"duel_{duel_id}_{user.id}"
-    kb_p2 = question_keyboard(first_q, 0, total, context_p2)
+    await context.bot.send_message(duel["p1"],
+        f"⚔️ {user.first_name} принял вызов! Начинаем!\nУровень: {LEVEL_NAMES[level]}")
+    await send_poll(context, duel["p1"], duel["p1"], questions[0], 0, 5, level, "duel", duel_id)
+
     await update.message.reply_text(
-        f"⚔️ Дуэль с *{p1_name}*! Начинаем!\n\n" +
-        question_text(first_q, 0, total, LEVEL_NAMES[level]),
-        reply_markup=kb_p2,
-        parse_mode="Markdown"
-    )
+        f"⚔️ Дуэль с {p1_name}! Начинаем!\nУровень: {LEVEL_NAMES[level]}")
+    await send_poll(context, update.effective_chat.id, user.id, questions[0], 0, 5, level, "duel", duel_id)
 
 async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
-        await update.message.reply_text("Укажи код: `/join КОД`", parse_mode="Markdown")
+        await update.message.reply_text("Укажи код: /join КОД")
         return
-    await handle_join_duel(update, context, context.args[0].upper())
+    await join_duel_handler(update, context, context.args[0].upper())
 
 def main():
     init_db()
@@ -669,6 +641,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("join", join_cmd))
     app.add_handler(CallbackQueryHandler(btn))
+    app.add_handler(PollAnswerHandler(poll_answer))
     print("✅ TheForceQuizBot запущен!")
     app.run_polling()
 
