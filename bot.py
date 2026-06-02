@@ -207,7 +207,7 @@ CARDS = {
     "vader":{"name":"Дарт Вейдер","side":"Тёмная","price":100,"emoji":"🔴","quote":"Я — твой отец."},
     "yoda":{"name":"Йода","side":"Светлая","price":80,"emoji":"🟢","quote":"Делай или не делай."},
     "luke":{"name":"Люк Скайуокер","side":"Светлая","price":80,"emoji":"⚔️","quote":"Я джедай."},
-    "obi":{"name":"Оби-Ван Кеноби","side":"Светлая","price":90,"emoji":"🔵","quote":"Да пребудет с тобой Сила."},
+    "obi":{"name":"Оби-Ван Кеноби","side":"Светлая","price":90,"emoji":"🔵","quote":"Да прибудет с тобой Сила."},
     "mando":{"name":"Мандалорец","side":"Нейтральная","price":120,"emoji":"⚙️","quote":"Таков путь."},
     "palp":{"name":"Палпатин","side":"Тёмная","price":150,"emoji":"⚡","quote":"Неограниченная власть!"},
     "maul":{"name":"Дарт Мол","side":"Тёмная","price":110,"emoji":"🖤","quote":"Страдания — пища ситха."},
@@ -593,7 +593,8 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif d == "profile":
         row = get_user(user.id)
-        _, name, score, coins, streak, _, total, correct = row
+       row = row[:8]
+       uid, name, score, coins, streak, lp, total, correct = row
         acc = f"{round(correct/total*100)}%" if total>0 else "—"
         owned = get_cards(user.id)
         await q.edit_message_text(
