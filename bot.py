@@ -722,15 +722,16 @@ async def join_duel_handler(update, context, duel_id):
 
     await send_duel_question(context, chat_id, duel_id, 0, duel)
 
-   async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.photo:
-        file_id = update.message.photo[-1].file_id
-        await update.message.reply_text(f"`{file_id}`")
-    async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text("Укажи код: /join КОД")
         return
     await join_duel_handler(update, context, context.args[0].upper())
+
+async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.photo:
+        file_id = update.message.photo[-1].file_id
+        await update.message.reply_text(f"file_id:\n`{file_id}`", parse_mode="Markdown")
 
 def main():
     time.sleep(5)
