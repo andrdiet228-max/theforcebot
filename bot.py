@@ -641,6 +641,8 @@ async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await join_duel_handler(update, context, context.args[0].upper())
 
 def main():
+    import time
+    time.sleep(5)
     init_db()
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
