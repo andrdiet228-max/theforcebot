@@ -31,6 +31,12 @@ def init_db():
         try:
             c.execute(f"ALTER TABLE users ADD COLUMN {col} INTEGER DEFAULT {default}")
         except: pass
+    try:
+        c.execute("ALTER TABLE active_polls ADD COLUMN session_type TEXT DEFAULT 'quiz'")
+    except: pass
+    try:
+        c.execute("ALTER TABLE active_polls ADD COLUMN duel_id TEXT DEFAULT NULL")
+    except: pass
     c.execute("""CREATE TABLE IF NOT EXISTS sessions (
         user_id INTEGER PRIMARY KEY, level TEXT,
         index_ INTEGER DEFAULT 0, coins INTEGER DEFAULT 0, questions TEXT
