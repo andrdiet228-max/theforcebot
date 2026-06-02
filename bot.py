@@ -9,7 +9,7 @@ from datetime import date
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Poll
 from telegram.ext import (
     Application, CommandHandler, CallbackQueryHandler,
-    ContextTypes, PollAnswerHandler
+    ContextTypes, PollAnswerHandler, MessageHandler, filters
 )
 
 TOKEN = os.getenv("TOKEN", "8905147513:AAE6KLipviMXdOjYxiRhNE9vEeiz7PVOa4k")
@@ -722,7 +722,11 @@ async def join_duel_handler(update, context, duel_id):
 
     await send_duel_question(context, chat_id, duel_id, 0, duel)
 
-async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+   async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.photo:
+        file_id = update.message.photo[-1].file_id
+        await update.message.reply_text(f"`{file_id}`")
+    async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text("Укажи код: /join КОД")
         return
@@ -736,6 +740,7 @@ def main():
     app.add_handler(CommandHandler("join", join_cmd))
     app.add_handler(CallbackQueryHandler(btn))
     app.add_handler(PollAnswerHandler(poll_answer))
+    app.add_handler(MessageHandler(filters.PHOTO, get_file_id))
     print("✅ TheForceQuizBot запущен!")
     app.run_polling()
 
