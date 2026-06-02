@@ -353,9 +353,8 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot_info = await context.bot.get_me()
         link = f"https://t.me/{bot_info.username}?start=duel_{duel_id}"
         await q.edit_message_text(
-            f"⚔️ Дуэль создана!\n\nУровень: {LEVEL_NAMES[level]}\nКод: `{duel_id}`\n\nОтправь другу ссылку:\n{link}\n\nИли пусть напишет: /join {duel_id}",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Меню", callback_data="menu")]]),
-            parse_mode="Markdown"
+           f"⚔️ Дуэль создана!\n\nУровень: {LEVEL_NAMES[level]}\nКод: {duel_id}\n\nОтправь другу ссылку:\n{link}\n\nИли пусть напишет: /join {duel_id}",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Меню", callback_data="menu")]])
         )
 
     elif d == "duel_code":
