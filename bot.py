@@ -593,8 +593,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif d == "profile":
         row = get_user(user.id)
-       row = row[:8]
-       uid, name, score, coins, streak, lp, total, correct = row
+        name, score, coins, streak, lp, total, correct = row[1], row[2], row[3], row[4], row[5], row[6], row[7]
         acc = f"{round(correct/total*100)}%" if total>0 else "—"
         owned = get_cards(user.id)
         await q.edit_message_text(
