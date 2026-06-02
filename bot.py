@@ -31,12 +31,6 @@ def init_db():
         try:
             c.execute(f"ALTER TABLE users ADD COLUMN {col} INTEGER DEFAULT {default}")
         except: pass
-    try:
-        c.execute("ALTER TABLE active_polls ADD COLUMN session_type TEXT DEFAULT 'quiz'")
-    except: pass
-    try:
-        c.execute("ALTER TABLE active_polls ADD COLUMN duel_id TEXT DEFAULT NULL")
-    except: pass
     c.execute("""CREATE TABLE IF NOT EXISTS sessions (
         user_id INTEGER PRIMARY KEY, level TEXT,
         index_ INTEGER DEFAULT 0, coins INTEGER DEFAULT 0, questions TEXT
@@ -527,9 +521,18 @@ async def poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
             kb = [[InlineKeyboardButton("🔄 Ещё раз", callback_data="choose_level"),
                    InlineKeyboardButton("🏠 Меню", callback_data="menu")]]
             text = f"{result}\n\n🏁 Квиз завершён!\nЗаработано: {new_coins} монет 🪙"
-        else:
-            kb = [[InlineKeyboardButton(f"Следующий вопрос {new_index+1}/10 ➡️", callback_data="next_question")]]
-            text = f"{result}\n\nВопрос {session['index']+1} из {len(session['questions'])} пройден."
+        if new_index < len(session["questions"]):
+            try:
+                await context.bot.send_message(user_id, result)
+            except Exception as e:
+                logging.error(f"poll_answer error: {e}")
+            try:
+                await send_poll(context, user_id, user_id,
+                               session["questions"][new_index], new_index,
+                               len(session["questions"]), session["level"])
+            except Exception as e:
+                logging.error(f"send next poll error: {e}")
+            return
 
         try:
             await context.bot.send_message(user_id, text, reply_markup=InlineKeyboardMarkup(kb))
@@ -591,9 +594,13 @@ async def poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await context.bot.send_message(user_id, f"{result}\n\nТы закончил! Ждём соперника... ⏳")
                 except: pass
         else:
-            kb = [[InlineKeyboardButton(f"Следующий вопрос {new_index+1}/5 ➡️", callback_data=f"duel_next_{duel_id}")]]
             try:
-                await context.bot.send_message(user_id, f"{result}", reply_markup=InlineKeyboardMarkup(kb))
+                await context.bot.send_message(user_id, result)
+            except: pass
+            try:
+                await send_poll(context, user_id, user_id,
+                               duel["questions"][new_index], new_index, len(duel["questions"]),
+                               duel["level"], "duel", duel_id)
             except: pass
 
 # ─────────────────────────────────────────
