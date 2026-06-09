@@ -97,7 +97,7 @@ def add_result(user_id, coins, correct):
             last_play=?, total=total+1, correct=correct+1 WHERE user_id=?""",
             (coins, coins, streak, today, user_id))
     else:
-        c.execute("UPDATE users SET total=total+1, streak=1, last_play=? WHERE user_id=?",
+        c.execute("UPDATE users SET total=total+1, streak=0, last_play=? WHERE user_id=?",
             (today, user_id))
     conn.commit()
     conn.close()
@@ -503,7 +503,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("◀️ Назад", callback_data="menu")],
         ]
         await q.edit_message_text(
-            "🤺 Дуэль с другом\n\nМожно играть прямо в беседе! Создай дуэль, отправь другу код — кто наберёт больше очков, тот победит!\nПобедитель получает +50 монет 🪙",
+            "🤺 Дуэль с другом\n\nМожно играть прямо в беседе! Создай дуэль, отправь другу код — кто наберёт больше монет, тот победил!",
             reply_markup=InlineKeyboardMarkup(kb)
         )
 
@@ -530,7 +530,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot_info = await context.bot.get_me()
         link = f"https://t.me/{bot_info.username}?start=duel_{duel_id}"
         await q.edit_message_text(
-            f"⚔️ Дуэль создана!\n\nУровень: {LEVEL_NAMES[level]}\nКод: {duel_id}\n\nОтправь другу ссылку или код:\n{link}\n\nИли пусть напишет: /join {duel_id}\n\nДуэль можно начать прямо в беседе — отправь туда ссылку!",
+            f"⚔️ Дуэль создана!\n\nУровень: {LEVEL_NAMES[level]}\nКод: {duel_id}\n\nОтправь другу ссылку или код:\n{link}\n\nИли пусть нажмёт /join {duel_id}",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Меню", callback_data="menu")]])
         )
 
