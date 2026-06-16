@@ -610,7 +610,7 @@ async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args: return await update.message.reply_text("Укажи код: /join КОД")
     await join_duel_handler(update, context, context.args[0].upper())
 
-async def join_duel_handler(update: Update, context: duel_id):
+async def join_duel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, duel_id: str):
     user = update.effective_user
     get_user(user.id, user.username or user.first_name)
         
