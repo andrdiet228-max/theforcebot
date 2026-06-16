@@ -12,7 +12,7 @@ from telegram.ext import (
     ContextTypes, PollAnswerHandler, MessageHandler, filters
 )
 
-TOKEN = os.getenv("TOKEN", "8905147513:AAE6KLipviMXdOjYxiRhNE9vEeiz7PVOa4k")
+TOKEN = os.environ.get("TOKEN")
 logging.basicConfig(level=logging.INFO)
 
 # ─────────────────────────────────────────
@@ -327,12 +327,11 @@ async def send_duel_question(context, chat_id, duel_id, q_index, duel):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username or user.first_name)
+    
     if context.args and context.args[0].startswith("duel_"):
         await join_duel_handler(update, context, context.args[0].replace("duel_",""))
         return
-    await show_menu(update.message.reply_text)
 
-async def show_menu(send_func):
     kb = [
         [InlineKeyboardButton("⚔️ Квиз", callback_data="choose_level"),
          InlineKeyboardButton("🤺 Дуэль", callback_data="duel_menu")],
@@ -341,7 +340,8 @@ async def show_menu(send_func):
         [InlineKeyboardButton("🏆 Топ", callback_data="leaderboard"),
          InlineKeyboardButton("👤 Профиль", callback_data="profile")],
     ]
-    await send_func(
+    
+    await update.message.reply_text(
         "⚔️ Главное меню\nДа прибудет с тобой Сила! ✨",
         reply_markup=InlineKeyboardMarkup(kb)
     )
