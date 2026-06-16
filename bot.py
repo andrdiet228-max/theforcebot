@@ -28,7 +28,7 @@ def init_db():
         total INTEGER DEFAULT 0, correct INTEGER DEFAULT 0,
         last_daily INTEGER DEFAULT 0, last_meditate INTEGER DEFAULT 0
     )""")
-    for col, default in [("coins","0"),("total","0"),("correct","0"),("streak","0"),("last_daily","0"),("last_meditate","0")]:
+    for col, default in [("coins","0"),("total","0"),("correct","0"),("streak","0"), ("last_daily","0"), ("last_meditate","0")]:
         try: c.execute(f"ALTER TABLE users ADD COLUMN {col} INTEGER DEFAULT {default}")
         except: pass
     c.execute("""CREATE TABLE IF NOT EXISTS sessions (
@@ -186,7 +186,7 @@ def update_duel(duel_id, **kwargs):
     conn.close()
 
 # ─────────────────────────────────────────
-# ДАННЫЕ (ЭКОНОМИКА СНИЖЕНА: теперь квиз дает мало монет)
+# ДАННЫЕ
 # ─────────────────────────────────────────
 QUESTIONS = {
     "padawan": [
@@ -310,41 +310,34 @@ QUESTIONS = {
 LEVEL_NAMES = {"padawan":"🟢 Падаван","jedi":"🔵 Рыцарь джедай","master":"🔴 Мастер джедай"}
 
 # ─────────────────────────────────────────
-# КАРТОЧКИ (Расширенная база и шансы для Паков)
+# КАРТОЧКИ
 # ─────────────────────────────────────────
 CARDS = {
-    # ⚪ ОБЫЧНЫЕ
     "clone":{"name":"Клон-солдат","side":"Республика","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/1200x/aa/ea/59/aaea593fff212eca1fab094c3cedb25b.jpg","quote":"За Республику!"},
     "bb8":{"name":"BB-8","side":"Светлая","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/1200x/48/11/41/481141b646a94a2ef84fed47b3c345ca.jpg","quote":"Бип-буп!"},
     "scout":{"name":"Штурмовик-разведчик","side":"Империя","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/736x/52/79/a0/5279a05bd89ffa13572889b489fe06a3.jpg","quote":"Цель найдена."},
-    "ewok":{"name":"Вуки","side":"Повстанцы","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/736x/ewok_placeholder.jpg","quote":"Юбуб!"}, # Замени ссылку
-    "jawa":{"name":"Джава","side":"Нейтральная","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/736x/jawa_placeholder.jpg","quote":"Утини!"}, # Замени ссылку
+    "ewok":{"name":"Эвок","side":"Повстанцы","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/736x/ewok_placeholder.jpg","quote":"Юбуб!"},
+    "jawa":{"name":"Джава","side":"Нейтральная","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/736x/jawa_placeholder.jpg","quote":"Утини!"},
     
-    # 🔹 РЕДКИЕ
     "maul":{"name":"Дарт Мол","side":"Тёмная","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/39/42/ce/3942ced609109fb6c4c41835d4a82c27.jpg","quote":"Страдания — пища ситха."},
     "asoka":{"name":"Асока Тано","side":"Светлая","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/asoka_placeholder.jpg","quote":"Я никому не подчиняюсь!"},
     "mando":{"name":"Мандалорец","side":"Нейтральная","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/mando_placeholder.jpg","quote":"Таков путь."},
     "kylo":{"name":"Кайло Рен","side":"Тёмная","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/kylo_placeholder.jpg","quote":"Пусть прошлое умрет!"},
     "dooku":{"name":"Граф Дуку","side":"Тёмная","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/dooku_placeholder.jpg","quote":"Я большой фанат драмы."},
     
-    # 🟣 ЭПИЧЕСКИЕ
     "yoda":{"name":"Йода","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://i.pinimg.com/736x/yoda_placeholder.jpg","quote":"Делай или не делай."},
     "obi":{"name":"Оби-Ван Кеноби","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://i.pinimg.com/736x/obi_placeholder.jpg","quote":"Да прибудет с тобой Сила."},
     "luke":{"name":"Люк Скайуокер","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://i.pinimg.com/736x/luke_placeholder.jpg","quote":"Я джедай."},
     "anakin":{"name":"Энакин Скайуокер","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://i.pinimg.com/736x/anakin_placeholder.jpg","quote":"Я самый сильный джедай!"},
     
-    # 🟡 ЛЕГЕНДАРНЫЕ
     "vader":{"name":"Дарт Вейдер","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://i.pinimg.com/736x/a6/0d/bf/a60dbf9ad0db8b8e0d2b3d935f5b7ae4.jpg","quote":"Я — твой отец."},
     "palp":{"name":"Палпатин","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://i.pinimg.com/736x/palp_placeholder.jpg","quote":"Неограниченная власть!"},
     "revan":{"name":"Дарт Реван","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://i.pinimg.com/736x/revan_placeholder.jpg","quote":"Свет... Тьма... Я и то, и другое."},
     "boba":{"name":"Боба Фетт","side":"Нейтральная","rarity":"legendary","emoji":"🟡","img":"https://i.pinimg.com/736x/boba_placeholder.jpg","quote":"Он ничего мне не должен."},
 }
 
-# Шансы для МАГАЗИНА (Пак за 100 монет)
 PACK_CHANCES = {"common": 50, "rare": 30, "epic": 15, "legendary": 5}
-# Шансы для ЕЖЕДНЕВНОГО НАГРАЖДЕНИЯ (Больше легких)
 DAILY_CHANCES = {"common": 65, "rare": 25, "epic": 8, "legendary": 2}
-# Шансы для МЕДИТАЦИИ (Шанс на эпик/легу выше!)
 MEDITATE_CHANCES = {"common": 0, "rare": 50, "epic": 35, "legendary": 15}
 
 def get_rank(score):
@@ -354,7 +347,6 @@ def get_rank(score):
     if score < 700: return "🟣 Мастер"
     return "⭐ Великий магистр"
 
-# Вспомогательная функция выдачи карточки
 async def give_random_card(user_id, context, chat_id, chances_dict, source_text):
     roll = random.randint(1, 100)
     current_chance, chosen_rarity = 0, "common"
@@ -379,7 +371,6 @@ async def give_random_card(user_id, context, chat_id, chances_dict, source_text)
         await context.bot.send_photo(chat_id=chat_id, photo=card["img"], caption=text, reply_markup=InlineKeyboardMarkup(kb))
     except:
         await context.bot.send_message(chat_id=chat_id, text=text, reply_markup=InlineKeyboardMarkup(kb))
-
 
 # ─────────────────────────────────────────
 # ОТПРАВКА ОПРОСОВ И ДУЭЛЕЙ
@@ -406,7 +397,6 @@ async def send_duel_question(context, chat_id, duel_id, q_index, duel):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username or user.first_name)
-    
     kb = [
         [InlineKeyboardButton("⚔️ Квиз", callback_data="choose_level"), InlineKeyboardButton("🤺 Дуэль", callback_data="duel_menu")],
         [InlineKeyboardButton("🛒 Магазин", callback_data="shop"), InlineKeyboardButton("🎴 Коллекция", callback_data="collection")],
@@ -471,9 +461,10 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif d == "choose_level":
         kb = [
-                [InlineKeyboardButton("🟢 Падаван — легкие", callback_data="quiz_padawan")],
-                [InlineKeyboardButton("🔵 Рыцарь — средние", callback_data="quiz_jedi")],
-                [InlineKeyboardButton("🔴 Мастер — хардкор", callback_data="quiz_master")],
+            [InlineKeyboardButton("🟢 Падаван — легкие", callback_data="quiz_padawan")],
+            [InlineKeyboardButton("🔵 Рыцарь — средние", callback_data="quiz_jedi")],
+            [InlineKeyboardButton("🔴 Мастер — хардкор", callback_data="quiz_master")],
+            [InlineKeyboardButton("◀️ Назад", callback_data="menu")],
         ]
         await q.edit_message_text("Выбери уровень — 10 вопросов:", reply_markup=InlineKeyboardMarkup(kb))
 
@@ -491,7 +482,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         kb = [[InlineKeyboardButton("⚔️ Создать дуэль", callback_data="duel_create")],[InlineKeyboardButton("🔗 Ввести код", callback_data="duel_code")],[InlineKeyboardButton("◀️ Назад", callback_data="menu")]]
         await q.edit_message_text("🤺 Дуэль с другом\n\nСоздай дуэль и отправь другу код!", reply_markup=InlineKeyboardMarkup(kb))
 
-        elif d == "duel_create":
+    elif d == "duel_create":
         kb = [[InlineKeyboardButton("🟢 Падаван", callback_data="duel_lvl_padawan")],[InlineKeyboardButton("🔵 Рыцарь", callback_data="duel_lvl_jedi")],[InlineKeyboardButton("🔴 Мастер", callback_data="duel_lvl_master")]]
         await q.edit_message_text("Выбери уровень дуэли:", reply_markup=InlineKeyboardMarkup(kb))
 
@@ -529,7 +520,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await give_random_card(user.id, context, q.message.chat_id, DAILY_CHANCES, "Ежедневная награда!")
 
     elif d == "meditate":
-        if now - last_meditate < 10800: # 3 часа = 10800 секунд
+        if now - last_meditate < 10800:
             remain = 10800 - (now - last_meditate)
             h, m = remain // 3600, (remain % 3600) // 60
             return await q.answer(f"⏰ Медитация восстановится через {h}ч. {m}мин.", show_alert=True)
@@ -538,7 +529,6 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try: await q.message.delete()
         except: pass
         
-        # Моя идея: 70% монеты, 30% крутая карточка
         if random.randint(1, 100) <= 30:
             await give_random_card(user.id, context, q.message.chat_id, MEDITATE_CHANCES, "🧘 Глубокая медитация...\n\nТы увидел вещее видение в Силе!")
         else:
@@ -614,7 +604,7 @@ async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text("❌ Дуэли проходят только в общих чатах! Добавь меня в беседу и введи команду там.")
     await join_duel_handler(update, context, context.args[0].upper())
 
-async def join_duel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def join_duel_handler(update, context, duel_id):
     user = update.effective_user
     get_user(user.id, user.username or user.first_name)
     if update.effective_chat.type == 'private':
@@ -638,6 +628,7 @@ async def join_duel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.photo:
         await update.message.reply_text(f"file_id:\n`{update.message.photo[-1].file_id}`", parse_mode="Markdown")
+
 def main():
     time.sleep(5)
     init_db()
