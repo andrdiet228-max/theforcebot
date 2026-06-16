@@ -258,14 +258,32 @@ QUESTIONS = {
 LEVEL_NAMES = {"padawan":"🟢 Падаван","jedi":"🔵 Рыцарь джедай","master":"🔴 Мастер джедай"}
 
 CARDS = {
-    "vader":{"name":"Дарт Вейдер","side":"Тёмная","price":100,"emoji":"🔴","quote":"Я — твой отец."},
-    "yoda":{"name":"Йода","side":"Светлая","price":80,"emoji":"🟢","quote":"Делай или не делай."},
-    "luke":{"name":"Люк Скайуокер","side":"Светлая","price":80,"emoji":"⚔️","quote":"Я джедай."},
-    "obi":{"name":"Оби-Ван Кеноби","side":"Светлая","price":90,"emoji":"🔵","quote":"Да прибудет с тобой Сила."},
-    "mando":{"name":"Мандалорец","side":"Нейтральная","price":120,"emoji":"⚙️","quote":"Таков путь."},
-    "palp":{"name":"Палпатин","side":"Тёмная","price":150,"emoji":"⚡","quote":"Неограниченная власть!"},
-    "maul":{"name":"Дарт Мол","side":"Тёмная","price":110,"emoji":"🖤","quote":"Страдания — пища ситха."},
-    "rey":{"name":"Рей","side":"Светлая","price":90,"emoji":"🌟","quote":"Я никто."},
+    # ⚪ ОБЫЧНЫЕ (Шанс 50%)
+    "clone":{"name":"Клон-солдат","side":"Республика","rarity":"common","emoji":"⚪","img":"https://example.com/clone.jpg","quote":"За Республику!"},
+    "droid":{"name":"Боевой дроид","side":"Торговая федерация","rarity":"common","emoji":"⚪","img":"https://example.com/droid.jpg","quote":"Роже, роже!"},
+    "stormtrooper":{"name":"Штурмовик","side":"Империя","rarity":"common","emoji":"⚪","img":"https://example.com/storm.jpg","quote":"Переоденьтесь и идите за ними!"},
+    
+    # 🔹 РЕДКИЕ (Шанс 30%)
+    "maul":{"name":"Дарт Мол","side":"Тёмная","rarity":"rare","emoji":"🔹","img":"https://example.com/maul.jpg","quote":"Страдания — пища ситха."},
+    "rey":{"name":"Рей","side":"Светлая","rarity":"rare","emoji":"🔹","img":"https://example.com/rey.jpg","quote":"Я никто."},
+    "mando":{"name":"Мандалорец","side":"Нейтральная","rarity":"rare","emoji":"🔹","img":"https://example.com/mando.jpg","quote":"Таков путь."},
+    
+    # 🟣 ЭПИЧЕСКИЕ (Шанс 15%)
+    "yoda":{"name":"Йода","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://example.com/yoda.jpg","quote":"Делай или не делай."},
+    "obi":{"name":"Оби-Ван Кеноби","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://example.com/obi.jpg","quote":"Да прибудет с тобой Сила."},
+    "luke":{"name":"Люк Скайуокер","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://example.com/luke.jpg","quote":"Я джедай."},
+    
+    # 🟡 ЛЕГЕНДАРНЫЕ (Шанс 5%)
+    "vader":{"name":"Дарт Вейдер","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://example.com/vader.jpg","quote":"Я — твой отец."},
+    "palp":{"name":"Палпатин","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://example.com/palp.jpg","quote":"Неограниченная власть!"},
+}
+
+# Шансы выпадения (в сумме должно быть 100)
+PACK_CHANCES = {
+    "common": 50,
+    "rare": 30,
+    "epic": 15,
+    "legendary": 5
 }
 
 def get_rank(score):
@@ -540,57 +558,81 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Назад", callback_data="duel_menu")]])
         )
 
-    elif d == "shop":
+       elif d == "shop":
         row = get_user(user.id)
         coins = row[3]
-        owned = get_cards(user.id)
-        kb = []
-        for cid, card in CARDS.items():
-            if cid in owned:
-                kb.append([InlineKeyboardButton(f"✅ {card['emoji']} {card['name']}", callback_data=f"card_{cid}")])
-            else:
-                kb.append([InlineKeyboardButton(f"{card['emoji']} {card['name']} — {card['price']} монет", callback_data=f"buy_{cid}")])
-        kb.append([InlineKeyboardButton("◀️ Меню", callback_data="menu")])
-        await q.edit_message_text(f"🛒 Магазин карточек\nУ тебя: {coins} монет 🪙",
-                                   reply_markup=InlineKeyboardMarkup(kb))
-
-    elif d.startswith("buy_"):
-        cid = d.replace("buy_","")
-        card = CARDS[cid]
-        if cid in get_cards(user.id):
-            await q.answer("Уже есть!", show_alert=True)
-            return
-        if spend_coins(user.id, card["price"]):
-            add_card(user.id, cid)
-            await q.answer(f"✅ {card['name']} добавлена в коллекцию!", show_alert=True)
-        else:
-            await q.answer("❌ Недостаточно монет!", show_alert=True)
-        row = get_user(user.id)
-        coins = row[3]
-        owned = get_cards(user.id)
-        kb = []
-        for c_id, c in CARDS.items():
-            if c_id in owned:
-                kb.append([InlineKeyboardButton(f"✅ {c['emoji']} {c['name']}", callback_data=f"card_{c_id}")])
-            else:
-                kb.append([InlineKeyboardButton(f"{c['emoji']} {c['name']} — {c['price']} монет", callback_data=f"buy_{c_id}")])
-        kb.append([InlineKeyboardButton("◀️ Меню", callback_data="menu")])
-        await q.edit_message_text(f"🛒 Магазин карточек\nУ тебя: {coins} монет 🪙",
-                                   reply_markup=InlineKeyboardMarkup(kb))
-
-    elif d.startswith("card_"):
-        cid = d.replace("card_","")
-        card = CARDS[cid]
+        kb = [
+            [InlineKeyboardButton("📦 Открыть пак (50 монет)", callback_data="open_pack")],
+            [InlineKeyboardButton("◀️ Меню", callback_data="menu")]
+        ]
         await q.edit_message_text(
-            f"{card['emoji']} {card['name']}\n\nСторона: {card['side']}\n\n{card['quote']}",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Назад", callback_data="collection")]]),
+            f"🛒 Магазин карточек\n\nУ тебя: {coins} монет 🪙\n\nПокупай паки и собирай коллекцию!\n⚪ Обычные - 50%\n🔹 Редкие - 30%\n🟣 Эпические - 15%\n🟡 Легендарные - 5%",
+            reply_markup=InlineKeyboardMarkup(kb)
         )
+
+    elif d == "open_pack":
+        pack_price = 50
+        if not spend_coins(user.id, pack_price):
+            await q.answer("❌ Недостаточно монет для пака!", show_alert=True)
+            return
+
+        # --- ЛОГИКА ГАЧИ (ВЫПАДЕНИЕ) ---
+        roll = random.randint(1, 100)
+        current_chance = 0
+        chosen_rarity = "common"
+        
+        for rarity, chance in PACK_CHANCES.items():
+            current_chance += chance
+            if roll <= current_chance:
+                chosen_rarity = rarity
+                break
+
+        # Фильтруем карточки нужной редкости
+        possible_cards = [cid for cid, c in CARDS.items() if c["rarity"] == chosen_rarity]
+        won_card_id = random.choice(possible_cards)
+        card = CARDS[won_card_id]
+
+        # Если карточка уже есть - даем бонус монет
+        is_new = won_card_id not in get_cards(user.id)
+        add_card(user.id, won_card_id)
+        
+        bonus = 0
+        if not is_new:
+            bonus = pack_price // 2  # Возвращаем половину стоимости за дубль
+            add_result(user.id, bonus, False)
+
+        # Формируем сообщение
+        rarity_names = {"common": "Обычная", "rare": "Редкая", "epic": "Эпическая", "legendary": "Легендарная"}
+        text = (
+            f"🎉 Выпала карточка!\n\n"
+            f"{card['emoji']} {card['name']}\n"
+            f"Редкость: {rarity_names[card['rarity']]}\n"
+            f"Сторона: {card['side']}\n\n"
+            f"«{card['quote']}»"
+        )
+        if not is_new:
+            text += f"\n\n⚡ Дубль! Возвращено {bonus} монет."
+
+        kb = [[InlineKeyboardButton("📦 Ещё пак", callback_data="open_pack")],
+              [InlineKeyboardButton("🎴 Коллекция", callback_data="collection")],
+              [InlineKeyboardButton("◀️ В магазин", callback_data="shop")]]
+
+        try:
+            await context.bot.send_photo(
+                chat_id=q.message.chat_id, 
+                photo=card["img"], 
+                caption=text, 
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
+            await q.message.delete()
+        except Exception as e:
+            await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
 
     elif d == "collection":
         owned = get_cards(user.id)
         if not owned:
             await q.edit_message_text(
-                "🎴 Коллекция пуста\n\nЗарабатывай монеты и покупай карточки в магазине!",
+                "🎴 Коллекция пуста\n\nОткрывай паки в магазине!",
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("🛒 Магазин", callback_data="shop")],
                     [InlineKeyboardButton("◀️ Меню", callback_data="menu")]
@@ -601,6 +643,14 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             kb.append([InlineKeyboardButton("◀️ Меню", callback_data="menu")])
             await q.edit_message_text(f"🎴 Моя коллекция ({len(owned)}/{len(CARDS)})",
                                        reply_markup=InlineKeyboardMarkup(kb))
+
+    elif d.startswith("card_"):
+        cid = d.replace("card_","")
+        card = CARDS[cid]
+        await q.edit_message_text(
+            f"{card['emoji']} {card['name']}\n\nСторона: {card['side']}\n\n{card['quote']}",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Назад", callback_data="collection")]]),
+        )
 
     elif d == "leaderboard":
         rows = get_leaderboard()
