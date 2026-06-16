@@ -382,19 +382,16 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await q.answer("Дуэль не найдена или уже завершена.", show_alert=True)
             return
 
-        # Проверяем что это участник дуэли
         if user.id not in [duel["p1"], duel["p2"]]:
             await q.answer("Ты не участник этой дуэли!", show_alert=True)
             return
 
-        # Проверяем что это текущий вопрос
         if q_index != duel["cur_qi"]:
             await q.answer("Этот вопрос уже закрыт.", show_alert=True)
             return
 
         is_p1 = user.id == duel["p1"]
 
-        # Проверяем не ответил ли уже
         if is_p1 and duel["p1a"]:
             await q.answer("Ты уже ответил на этот вопрос!", show_alert=True)
             return
@@ -421,25 +418,21 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 await q.answer(f"❌ Неверно. Правильный: {question['o'][question['a']]}", show_alert=True)
 
-        # Перечитываем дуэль
         duel = get_duel(duel_id)
         both_answered = duel["p1a"] and duel["p2a"]
 
         if both_answered:
             next_index = q_index + 1
             if next_index < len(duel["questions"]):
-                # Следующий вопрос
                 try:
                     p1_name = (await context.bot.get_chat(duel["p1"])).first_name
                     p2_name = (await context.bot.get_chat(duel["p2"])).first_name
                 except:
                     p1_name, p2_name = "Игрок 1", "Игрок 2"
 
-                # Обновляем индексы
                 update_duel(duel_id, p1i=next_index, p2i=next_index)
                 duel = get_duel(duel_id)
 
-                # Редактируем старое сообщение — убираем кнопки
                 try:
                     await context.bot.edit_message_reply_markup(
                         chat_id=duel["chat_id"],
@@ -448,10 +441,8 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                 except: pass
 
-                # Отправляем следующий вопрос
                 await send_duel_question(context, duel["chat_id"], duel_id, next_index, duel)
             else:
-                # Дуэль завершена
                 update_duel(duel_id, p1d=1, p2d=1, status="finished")
                 duel = get_duel(duel_id)
 
@@ -558,7 +549,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Назад", callback_data="duel_menu")]])
         )
 
-       elif d == "shop":
+    elif d == "shop":
         row = get_user(user.id)
         coins = row[3]
         kb = [
@@ -576,7 +567,6 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await q.answer("❌ Недостаточно монет для пака!", show_alert=True)
             return
 
-        # --- ЛОГИКА ГАЧИ (ВЫПАДЕНИЕ) ---
         roll = random.randint(1, 100)
         current_chance = 0
         chosen_rarity = "common"
@@ -587,21 +577,18 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chosen_rarity = rarity
                 break
 
-        # Фильтруем карточки нужной редкости
         possible_cards = [cid for cid, c in CARDS.items() if c["rarity"] == chosen_rarity]
         won_card_id = random.choice(possible_cards)
         card = CARDS[won_card_id]
 
-        # Если карточка уже есть - даем бонус монет
         is_new = won_card_id not in get_cards(user.id)
         add_card(user.id, won_card_id)
         
         bonus = 0
         if not is_new:
-            bonus = pack_price // 2  # Возвращаем половину стоимости за дубль
+            bonus = pack_price // 2
             add_result(user.id, bonus, False)
 
-        # Формируем сообщение
         rarity_names = {"common": "Обычная", "rare": "Редкая", "epic": "Эпическая", "legendary": "Легендарная"}
         text = (
             f"🎉 Выпала карточка!\n\n"
@@ -780,7 +767,7 @@ async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.photo:
-        file_id = update.message.photo[-1].file_id
+        file_id = update.photo[-1].file_id
         await update.message.reply_text(f"file_id:\n`{file_id}`", parse_mode="Markdown")
 
 def main():
