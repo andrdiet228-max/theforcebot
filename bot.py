@@ -49,7 +49,6 @@ def init_db():
         user_id INTEGER, card_id TEXT,
         PRIMARY KEY (user_id, card_id)
     )""")
-    # Дуэли — новая схема с поддержкой групп
     c.execute("""CREATE TABLE IF NOT EXISTS duels (
         duel_id TEXT PRIMARY KEY,
         p1_id INTEGER, p2_id INTEGER, level TEXT,
@@ -258,31 +257,22 @@ QUESTIONS = {
 LEVEL_NAMES = {"padawan":"🟢 Падаван","jedi":"🔵 Рыцарь джедай","master":"🔴 Мастер джедай"}
 
 CARDS = {
-    # ⚪ ОБЫЧНЫЕ (Шанс 50%)
-    "clone":{"name":"Клон-солдат","side":"Республика","rarity":"common","emoji":"⚪","img":"https://example.com/clone.jpg","quote":"За Республику!"},
-    "droid":{"name":"Боевой дроид","side":"Торговая федерация","rarity":"common","emoji":"⚪","img":"https://example.com/droid.jpg","quote":"Роже, роже!"},
-    "stormtrooper":{"name":"Штурмовик","side":"Империя","rarity":"common","emoji":"⚪","img":"https://example.com/storm.jpg","quote":"Переоденьтесь и идите за ними!"},
+    # ⚪ ОБЫЧНЫЕ (Шанс 45%)
+    "clone":{"name":"Клон-солдат","side":"Республика","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/1200x/aa/ea/59/aaea593fff212eca1fab094c3cedb25b.jpg","quote":"За Республику!"},
+    "bb8":{"name":"BB-8","side":"Светлая","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/1200x/48/11/41/481141b646a94a2ef84fed47b3c345ca.jpg","quote":"Бип-буп!"},
+    "scout":{"name":"Штурмовик-разведчик","side":"Империя","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/736x/52/79/a0/5279a05bd89ffa13572889b489fe06a3.jpg","quote":"Цель найдена."},
     
-    # 🔹 РЕДКИЕ (Шанс 30%)
-    "maul":{"name":"Дарт Мол","side":"Тёмная","rarity":"rare","emoji":"🔹","img":"https://example.com/maul.jpg","quote":"Страдания — пища ситха."},
-    "rey":{"name":"Рей","side":"Светлая","rarity":"rare","emoji":"🔹","img":"https://example.com/rey.jpg","quote":"Я никто."},
-    "mando":{"name":"Мандалорец","side":"Нейтральная","rarity":"rare","emoji":"🔹","img":"https://example.com/mando.jpg","quote":"Таков путь."},
-    
-    # 🟣 ЭПИЧЕСКИЕ (Шанс 15%)
-    "yoda":{"name":"Йода","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://example.com/yoda.jpg","quote":"Делай или не делай."},
-    "obi":{"name":"Оби-Ван Кеноби","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://example.com/obi.jpg","quote":"Да прибудет с тобой Сила."},
-    "luke":{"name":"Люк Скайуокер","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://example.com/luke.jpg","quote":"Я джедай."},
+    # 🔹 РЕДКИЕ (Шанс 50%)
+    "maul":{"name":"Дарт Мол","side":"Тёмная","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/39/42/ce/3942ced609109fb6c4c41835d4a82c27.jpg","quote":"Страдания — пища ситха."},
     
     # 🟡 ЛЕГЕНДАРНЫЕ (Шанс 5%)
-    "vader":{"name":"Дарт Вейдер","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://example.com/vader.jpg","quote":"Я — твой отец."},
-    "palp":{"name":"Палпатин","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://example.com/palp.jpg","quote":"Неограниченная власть!"},
+    "vader":{"name":"Дарт Вейдер","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://i.pinimg.com/736x/a6/0d/bf/a60dbf9ad0db8b8e0d2b3d935f5b7ae4.jpg","quote":"Я — твой отец."},
 }
 
-# Шансы выпадения (в сумме должно быть 100)
+# Шансы выпадения (Сумма 100. Эпических пока нет, поэтому шанс редких увеличен)
 PACK_CHANCES = {
-    "common": 50,
-    "rare": 30,
-    "epic": 15,
+    "common": 45,
+    "rare": 50,
     "legendary": 5
 }
 
@@ -370,7 +360,6 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
     d = q.data
     user = q.from_user
 
-    # ── ОТВЕТ НА ВОПРОС ДУЭЛИ В ГРУППЕ ──
     if d.startswith("da_"):
         parts = d.split("_")
         duel_id = parts[1]
@@ -557,7 +546,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("◀️ Меню", callback_data="menu")]
         ]
         await q.edit_message_text(
-            f"🛒 Магазин карточек\n\nУ тебя: {coins} монет 🪙\n\nПокупай паки и собирай коллекцию!\n⚪ Обычные - 50%\n🔹 Редкие - 30%\n🟣 Эпические - 15%\n🟡 Легендарные - 5%",
+            f"🛒 Магазин карточек\n\nУ тебя: {coins} монет 🪙\n\nПокупай паки и собирай коллекцию!\n⚪ Обычные - 45%\n🔹 Редкие - 50%\n🟡 Легендарные - 5%",
             reply_markup=InlineKeyboardMarkup(kb)
         )
 
@@ -589,7 +578,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             bonus = pack_price // 2
             add_result(user.id, bonus, False)
 
-        rarity_names = {"common": "Обычная", "rare": "Редкая", "epic": "Эпическая", "legendary": "Легендарная"}
+        rarity_names = {"common": "Обычная", "rare": "Редкая", "legendary": "Легендарная"}
         text = (
             f"🎉 Выпала карточка!\n\n"
             f"{card['emoji']} {card['name']}\n"
