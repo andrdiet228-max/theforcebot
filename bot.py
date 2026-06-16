@@ -367,7 +367,7 @@ async def give_random_card(user_id, context, chat_id, chances_dict, source_text)
     
     won_card_id = random.choice(possible_cards)
     card = CARDS[won_card_id]
-    is_new = won_card_id not in get_cards(user.id)
+    is_new = won_card_id not in get_cards(user_id)
     add_card(user.id, won_card_id)
 
     rarity_names = {"common": "Обычная", "rare": "Редкая", "epic": "Эпическая", "legendary": "Легендарная"}
@@ -425,6 +425,8 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
     row = get_user(user.id, user.username)
     uid, name, score, coins, streak, lp, total, correct, last_daily, last_meditate = row
     now = int(time.time())
+    last_daily = last_daily or 0
+    last_meditate = last_meditate or 0
 
     if d.startswith("da_"):
         parts = d.split("_")
