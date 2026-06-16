@@ -455,7 +455,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_message(d_final["p1"], f"⚔️ Дуэль завершена!\n\n{res}", reply_markup=InlineKeyboardMarkup(kb))
                 await context.bot.send_message(d_final["p2"], f"⚔️ Дуэль завершена!\n\n{res}", reply_markup=InlineKeyboardMarkup(kb))
 
-       elif d == "menu":
+           elif d == "menu":
         kb = [
             [InlineKeyboardButton("⚔️ Квиз", callback_data="choose_level"), InlineKeyboardButton("🤺 Дуэль", callback_data="duel_menu")],
             [InlineKeyboardButton("🛒 Магазин", callback_data="shop"), InlineKeyboardButton("🎴 Коллекция", callback_data="collection")],
