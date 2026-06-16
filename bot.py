@@ -471,10 +471,9 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif d == "choose_level":
         kb = [
-            [InlineKeyboardButton("🟢 Падаван — легкие","callback_data="quiz_padawan")],
-            [InlineKeyboardButton("🔵 Рыцарь — средние","callback_data="quiz_jedi")],
-            [InlineKeyboardButton("🔴 Мастер — хардкор","callback_data="quiz_master")],
-            [InlineKeyboardButton("◀️ Назад", callback_data="menu")],
+                [InlineKeyboardButton("🟢 Падаван — легкие", callback_data="quiz_padawan")],
+                [InlineKeyboardButton("🔵 Рыцарь — средние", callback_data="quiz_jedi")],
+                [InlineKeyboardButton("🔴 Мастер — хардкор", callback_data="quiz_master")],
         ]
         await q.edit_message_text("Выбери уровень — 10 вопросов:", reply_markup=InlineKeyboardMarkup(kb))
 
