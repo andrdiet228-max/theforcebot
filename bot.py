@@ -455,14 +455,17 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_message(d_final["p1"], f"⚔️ Дуэль завершена!\n\n{res}", reply_markup=InlineKeyboardMarkup(kb))
                 await context.bot.send_message(d_final["p2"], f"⚔️ Дуэль завершена!\n\n{res}", reply_markup=InlineKeyboardMarkup(kb))
 
-    elif d == "menu":
+       elif d == "menu":
         kb = [
             [InlineKeyboardButton("⚔️ Квиз", callback_data="choose_level"), InlineKeyboardButton("🤺 Дуэль", callback_data="duel_menu")],
             [InlineKeyboardButton("🛒 Магазин", callback_data="shop"), InlineKeyboardButton("🎴 Коллекция", callback_data="collection")],
             [InlineKeyboardButton("🎁 Ежедневное", callback_data="daily"), InlineKeyboardButton("🧘 Медитация", callback_data="meditate")],
             [InlineKeyboardButton("🏆 Топ", callback_data="leaderboard"), InlineKeyboardButton("👤 Профиль", callback_data="profile")],
         ]
-        await q.edit_message_text("⚔️ Главное меню\nДа прибудет с тобой Сила! ✨", reply_markup=InlineKeyboardMarkup(kb))
+        try:
+            await q.edit_message_caption("⚔️ Главное меню\nДа прибудет с тобой Сила! ✨", reply_markup=InlineKeyboardMarkup(kb))
+        except:
+            await context.bot.send_message(q.message.chat_id, "⚔️ Главное меню\nДа прибудет с тобой Сила! ✨", reply_markup=InlineKeyboardMarkup(kb))
 
     elif d == "choose_level":
         kb = [
