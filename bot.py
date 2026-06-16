@@ -202,7 +202,6 @@ QUESTIONS = {
         {"q":"Кто правил Галактикой как Император?","o":["Дарт Вейдер","Граф Дуку","Палпатин","Таркин"],"a":2,"p":3,"d":1},
         {"q":"Кто такой R2-D2?","o":["Протокол-дроид","Астромех дроид","Боевой дроид","Охотник"],"a":1,"p":3,"d":1},
         {"q":"Как зовут мастера-джедая, похожего на черепаху?","o":["Йода","Пло Кун","Мейс Винду","Оби-Ван"],"a":0,"p":3,"d":1},
-        
         {"q":"Кто убил Дарта Мола?","o":["Йода","Оби-Ван","Квай-Гон","Палпатин"],"a":1,"p":4,"d":2},
         {"q":"Из чего состоит армия Республики?","o":["Дроидов","Клонов","Мандалорцев","Волонтёров"],"a":1,"p":4,"d":2},
         {"q":"Какая организация управляла Галактикой до Империи?","o":["Сепаратисты","Республика","Орден Джедаев","Торговая Федерация"],"a":1,"p":4,"d":2},
@@ -214,7 +213,6 @@ QUESTIONS = {
         {"q":"Кто тренировал Оби-Вана?","o":["Йода","Квай-Гон","Мейс Винду","Кит Фисто"],"a":1,"p":4,"d":2},
         {"q":"Какая раса у Джар-Джара Бинкса?","o":["Дроид","Гунган","Твилек","Человек"],"a":1,"p":4,"d":2},
         {"q":"Кто такой Лэндо Калриссиан?","o":["Джедай","Бармен","Админ Облачного Города","Солдат"],"a":2,"p":4,"d":2},
-
         {"q":"Какой приказ уничтожил джедаев?","o":["Приказ 65","Приказ 66","Приказ 99","Приказ 77"],"a":1,"p":5,"d":3},
         {"q":"Кто тайно заказал создание армии клонов?","o":["Палпатин","Сифо-Диас","Дарт Тиранус","Сифо-Диас и Тиранус"],"a":3,"p":5,"d":3},
         {"q":"Какое реальное имя Дарта Сидиуса?","o":["Шив Палпатин","Дарт Плэгас","Финис Валорум","Хас Визла"],"a":0,"p":5,"d":3},
@@ -241,7 +239,6 @@ QUESTIONS = {
         {"q":"Кто такой Канан Джаррус?","o":["Мастер","Выживший после Приказа 66","Ситх","Клон"],"a":1,"p":5,"d":1},
         {"q":"Как зовут сына Хана и Леи?","o":["Кайло Рен","Бен Соло","Энакин","Хан мл."],"a":1,"p":5,"d":1},
         {"q":"Кто такая Асадж Вентресс?","o":["Джедай","Ученица Дуку","Ситх","Сенатор"],"a":1,"p":5,"d":1},
-        
         {"q":"Что такое мидихлорианы?","o":["Оружие","Микроорганизмы Силы","Инопланетяне","Двигатель"],"a":1,"p":7,"d":2},
         {"q":"Кто такая Сатин Крайз?","o":["Джедай","Ситх","Мандалорка-пацифист","Клон"],"a":2,"p":7,"d":2},
         {"q":"Какой расы был Сев Тарс?","o":["Человек","Твилек","Миралука","Тогрута"],"a":1,"p":7,"d":2},
@@ -253,7 +250,6 @@ QUESTIONS = {
         {"q":"В каком братстве была Вентресс?","o":["Орден Ситхов","Сестры Ночи","Мандалорцы","Инквизиторы"],"a":1,"p":7,"d":2},
         {"q":"Кто убийца Сифо-Диаса?","o":["Дарт Мол","Дарт Сидиус","Дарт Плегас","Дарт Тиранус"],"a":1,"p":7,"d":2},
         {"q":"Как называется корабль Энакина и Асоки?","o":["Наблюдатель","Тень","Гостеприимный","Сокол"],"a":0,"p":7,"d":2},
-
         {"q":"Раса Йоды (по канону)?","o":["Квермийцы","Тогрутане","Не раскрыта","Миральцы"],"a":2,"p":10,"d":3},
         {"q":"Сколько членов Совета Джедаев?","o":["10","12","15","5"],"a":1,"p":10,"d":3},
         {"q":"Какое преступление совершил Энакин после смерти Шми?","o":["Убил Ватто","Убил тускенов","Сжег ферму","Убил Шоу"],"a":1,"p":10,"d":3},
@@ -280,7 +276,6 @@ QUESTIONS = {
         {"q":"Кто такой Гоган (Grogu)?","o":["Злодей","Детеныш расы Йоды","Дроид","Клон"],"a":1,"p":8,"d":1},
         {"q":"Какая группа охотников есть в Мандалорце?","o":["Боба Фетт","Клан Крайт","Инквизиторы","Гильдия"],"a":1,"p":8,"d":1},
         {"q":"Кто такой Роук?","o":["Дроид","Джедай-падаван","Мандалорец","Штурмовик"],"a":1,"p":8,"d":1},
-
         {"q":"Мандалорский кодекс чести?","o":["Дин Джарин","Резол-наре","Бескар","Ковата"],"a":1,"p":12,"d":2},
         {"q":"Кто такой Палпатин ДО канцлера?","o":["Сенатор Набу","Сенатор Корусанта","Губернатор","Джедай"],"a":0,"p":12,"d":2},
         {"q":"Как называется судно спасения Палпатина?","o":["Звезда Смерти","Затмение","Исполнительный","Нексус"],"a":1,"p":12,"d":2},
@@ -292,7 +287,6 @@ QUESTIONS = {
         {"q":"Кто убийца Шми Скайуокер?","o":["Дарт Мол","Племя тускенов","Вейдер","Боба Фетт"],"a":1,"p":12,"d":2},
         {"q":"Кто такая Миттра Сурик?","o":["Ситх","Джедай-Генерал","Мандалорка","Дроид"],"a":1,"p":12,"d":2},
         {"q":"Где древний храм ситхов?","o":["Корусант","Академия Бейна","Морабанд","Затмение"],"a":2,"p":12,"d":2},
-
         {"q":"Кто обучал Дарта Плагиаса?","o":["Дарт Тенебрус","Бейн","Сидиус","Нихилус"],"a":0,"p":15,"d":3},
         {"q":"Кто граф Дуку как ситх?","o":["Дарт Мол","Дарт Тиранус","Сидиус","Вейдер"],"a":1,"p":15,"d":3},
         {"q":"Что произошло с Энакином на Мустафаре?","o":["Потерял руку","Потерял ноги","Попал в лаву","Утонул"],"a":2,"p":15,"d":3},
@@ -318,18 +312,15 @@ CARDS = {
     "scout":{"name":"Штурмовик-разведчик","side":"Империя","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/736x/52/79/a0/5279a05bd89ffa13572889b489fe06a3.jpg","quote":"Цель найдена."},
     "ewok":{"name":"Эвок","side":"Повстанцы","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/736x/ewok_placeholder.jpg","quote":"Юбуб!"},
     "jawa":{"name":"Джава","side":"Нейтральная","rarity":"common","emoji":"⚪","img":"https://i.pinimg.com/736x/jawa_placeholder.jpg","quote":"Утини!"},
-    
     "maul":{"name":"Дарт Мол","side":"Тёмная","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/39/42/ce/3942ced609109fb6c4c41835d4a82c27.jpg","quote":"Страдания — пища ситха."},
     "asoka":{"name":"Асока Тано","side":"Светлая","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/asoka_placeholder.jpg","quote":"Я никому не подчиняюсь!"},
     "mando":{"name":"Мандалорец","side":"Нейтральная","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/mando_placeholder.jpg","quote":"Таков путь."},
     "kylo":{"name":"Кайло Рен","side":"Тёмная","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/kylo_placeholder.jpg","quote":"Пусть прошлое умрет!"},
     "dooku":{"name":"Граф Дуку","side":"Тёмная","rarity":"rare","emoji":"🔹","img":"https://i.pinimg.com/736x/dooku_placeholder.jpg","quote":"Я большой фанат драмы."},
-    
     "yoda":{"name":"Йода","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://i.pinimg.com/736x/yoda_placeholder.jpg","quote":"Делай или не делай."},
     "obi":{"name":"Оби-Ван Кеноби","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://i.pinimg.com/736x/obi_placeholder.jpg","quote":"Да прибудет с тобой Сила."},
     "luke":{"name":"Люк Скайуокер","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://i.pinimg.com/736x/luke_placeholder.jpg","quote":"Я джедай."},
     "anakin":{"name":"Энакин Скайуокер","side":"Светлая","rarity":"epic","emoji":"🟣","img":"https://i.pinimg.com/736x/anakin_placeholder.jpg","quote":"Я самый сильный джедай!"},
-    
     "vader":{"name":"Дарт Вейдер","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://i.pinimg.com/736x/a6/0d/bf/a60dbf9ad0db8b8e0d2b3d935f5b7ae4.jpg","quote":"Я — твой отец."},
     "palp":{"name":"Палпатин","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://i.pinimg.com/736x/palp_placeholder.jpg","quote":"Неограниченная власть!"},
     "revan":{"name":"Дарт Реван","side":"Тёмная","rarity":"legendary","emoji":"🟡","img":"https://i.pinimg.com/736x/revan_placeholder.jpg","quote":"Свет... Тьма... Я и то, и другое."},
@@ -380,16 +371,18 @@ async def send_poll(context, chat_id, user_id, question, index, total, level, se
     msg = await context.bot.send_poll(chat_id=chat_id, question=f"[{LEVEL_NAMES[level]}] Вопрос {index+1}/{total}\n{q['q']}", options=q["o"], type=Poll.QUIZ, correct_option_id=q["a"], is_anonymous=False, explanation=f"+{q['p']} монет")
     save_poll(msg.poll.id, user_id, q["a"], q["p"], session_type, duel_id)
 
-async def send_duel_question(context, chat_id, duel_id, q_index, duel):
+# НОВАЯ ФУНКЦИЯ: Отправка вопроса каждому лично (работает и в ЛС, и в группах)
+async def send_duel_question_ls(context, user_id, duel_id, q_index, duel):
     q = duel["questions"][q_index]
     total = len(duel["questions"])
-    try: p1_name, p2_name = (await context.bot.get_chat(duel["p1"])).first_name, (await context.bot.get_chat(duel["p2"])).first_name
-    except: p1_name, p2_name = "Игрок 1", "Игрок 2"
+    try: p1_name = (await context.bot.get_chat(duel["p1"])).first_name
+    except: p1_name = "Игрок 1"
+    try: p2_name = (await context.bot.get_chat(duel["p2"])).first_name
+    except: p2_name = "Игрок 2"
+
     text = f"⚔️ Дуэль: {p1_name} {duel['p1s']} — {duel['p2s']} {p2_name}\n[{LEVEL_NAMES[duel['level']]}] Вопрос {q_index+1}/{total}\n\n❓ {q['q']}"
     kb = [[InlineKeyboardButton(opt, callback_data=f"da_{duel_id}_{q_index}_{i}")] for i, opt in enumerate(q["o"])]
-    msg = await context.bot.send_message(chat_id, text, reply_markup=InlineKeyboardMarkup(kb))
-    update_duel(duel_id, cur_msg=msg.message_id, cur_qi=q_index, p1a=0, p2a=0)
-    return msg
+    await context.bot.send_message(chat_id=user_id, text=text, reply_markup=InlineKeyboardMarkup(kb))
 
 # ─────────────────────────────────────────
 # ХЕНДЛЕРЫ
@@ -397,6 +390,12 @@ async def send_duel_question(context, chat_id, duel_id, q_index, duel):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username or user.first_name)
+    
+    # ВОЗВРАТ ЛС ДУЭЛЕЙ
+    if context.args and context.args[0].startswith("duel_"):
+        await join_duel_handler(update, context, context.args[0].replace("duel_",""))
+        return
+
     kb = [
         [InlineKeyboardButton("⚔️ Квиз", callback_data="choose_level"), InlineKeyboardButton("🤺 Дуэль", callback_data="duel_menu")],
         [InlineKeyboardButton("🛒 Магазин", callback_data="shop"), InlineKeyboardButton("🎴 Коллекция", callback_data="collection")],
@@ -425,6 +424,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if q_index != duel["cur_qi"]: return await q.answer("Вопрос закрыт.", show_alert=True)
         is_p1 = user.id == duel["p1"]
         if (is_p1 and duel["p1a"]) or (not is_p1 and duel["p2a"]): return await q.answer("Ты уже ответил!", show_alert=True)
+        
         question = duel["questions"][q_index]
         is_correct = chosen == question["a"]
         points = question["p"] if is_correct else 0
@@ -432,23 +432,31 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if is_p1: update_duel(duel_id, p1s=duel["p1s"]+points, p1a=1)
         else: update_duel(duel_id, p2s=duel["p2s"]+points, p2a=1)
         await q.answer(f"✅ Верно! +{points}" if is_correct else "❌ Неверно", show_alert=True)
+
         duel = get_duel(duel_id)
         if duel["p1a"] and duel["p2a"]:
             next_index = q_index + 1
-            try: await context.bot.edit_message_reply_markup(chat_id=duel["chat_id"], message_id=duel["cur_msg"], reply_markup=None)
-            except: pass
             if next_index < len(duel["questions"]):
-                update_duel(duel_id, p1i=next_index, p2i=next_index)
-                await send_duel_question(context, duel["chat_id"], duel_id, next_index, get_duel(duel_id))
+                update_duel(duel_id, p1i=next_index, p2i=next_index, cur_qi=next_index, p1a=0, p2a=0)
+                duel = get_duel(duel_id)
+                # Отправляем НОВЫЙ вопрос каждому в его ЛС или группу
+                await send_duel_question_ls(context, duel["p1"], duel_id, next_index, duel)
+                await send_duel_question_ls(context, duel["p2"], duel_id, next_index, duel)
             else:
                 update_duel(duel_id, p1d=1, p2d=1, status="finished")
                 d_final = get_duel(duel_id)
-                try: p1_name, p2_name = (await context.bot.get_chat(d_final["p1"])).first_name, (await context.bot.get_chat(d_final["p2"])).first_name
-                except: p1_name, p2_name = "Игрок 1", "Игрок 2"
+                try: p1_name = (await context.bot.get_chat(d_final["p1"])).first_name
+                except: p1_name = "Игрок 1"
+                try: p2_name = (await context.bot.get_chat(d_final["p2"])).first_name
+                except: p2_name = "Игрок 2"
+
                 res = f"🤝 Ничья!\n{p1_name}: {d_final['p1s']} — {d_final['p2s']} {p2_name}"
                 if d_final["p1s"] > d_final["p2s"]: res = f"🏆 Победил {p1_name}!\n{p1_name}: {d_final['p1s']} — {d_final['p2s']} {p2_name}"; add_result(d_final["p1"], 20, True)
                 elif d_final["p2s"] > d_final["p1s"]: res = f"🏆 Победил {p2_name}!\n{p1_name}: {d_final['p1s']} — {d_final['p2s']} {p2_name}"; add_result(d_final["p2"], 20, True)
-                await context.bot.send_message(d_final["chat_id"], f"⚔️ Дуэль завершена!\n\n{res}", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Меню", callback_data="menu")]]))
+                
+                kb = [[InlineKeyboardButton("🏠 Меню", callback_data="menu")]]
+                await context.bot.send_message(d_final["p1"], f"⚔️ Дуэль завершена!\n\n{res}", reply_markup=InlineKeyboardMarkup(kb))
+                await context.bot.send_message(d_final["p2"], f"⚔️ Дуэль завершена!\n\n{res}", reply_markup=InlineKeyboardMarkup(kb))
 
     elif d == "menu":
         kb = [
@@ -480,7 +488,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif d == "duel_menu":
         kb = [[InlineKeyboardButton("⚔️ Создать дуэль", callback_data="duel_create")],[InlineKeyboardButton("🔗 Ввести код", callback_data="duel_code")],[InlineKeyboardButton("◀️ Назад", callback_data="menu")]]
-        await q.edit_message_text("🤺 Дуэль с другом\n\nСоздай дуэль и отправь другу код!", reply_markup=InlineKeyboardMarkup(kb))
+        await q.edit_message_text("🤺 Дуэль с другом\n\nСоздай дуэль и отправь другу ссылку или код!", reply_markup=InlineKeyboardMarkup(kb))
 
     elif d == "duel_create":
         kb = [[InlineKeyboardButton("🟢 Падаван", callback_data="duel_lvl_padawan")],[InlineKeyboardButton("🔵 Рыцарь", callback_data="duel_lvl_jedi")],[InlineKeyboardButton("🔴 Мастер", callback_data="duel_lvl_master")]]
@@ -494,7 +502,9 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         c = conn.cursor()
         c.execute("INSERT INTO duels (duel_id,p1_id,p2_id,level,p1_score,p2_score,p1_index,p2_index,p1_done,p2_done,questions,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (duel_id, user.id, None, level, 0, 0, 0, 0, 0, 0, json.dumps(questions), "waiting"))
         conn.commit(); conn.close()
-        await q.edit_message_text(f"⚔️ Дуэль создана!\n\nУровень: {LEVEL_NAMES[level]}\nКод: <code>{duel_id}</code>\n\n⚠️ Добавь бота в общую беседу и отправь другу команду:\n/join {duel_id}", parse_mode="HTML", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Меню", callback_data="menu")]]))
+        bot_info = await context.bot.get_me()
+        link = f"https://t.me/{bot_info.username}?start=duel_{duel_id}"
+        await q.edit_message_text(f"⚔️ Дуэль создана!\n\nУровень: {LEVEL_NAMES[level]}\nКод: <code>{duel_id}</code>\n\nОтправь другу ссылку или код:\n{link}", parse_mode="HTML", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Меню", callback_data="menu")]]))
 
     elif d == "duel_code":
         await q.edit_message_text("Введи команду:\n/join КОД", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Назад", callback_data="duel_menu")]]))
@@ -524,11 +534,9 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             remain = 10800 - (now - last_meditate)
             h, m = remain // 3600, (remain % 3600) // 60
             return await q.answer(f"⏰ Медитация восстановится через {h}ч. {m}мин.", show_alert=True)
-        
         update_time(user.id, "last_meditate", now)
         try: await q.message.delete()
         except: pass
-        
         if random.randint(1, 100) <= 30:
             await give_random_card(user.id, context, q.message.chat_id, MEDITATE_CHANCES, "🧘 Глубокая медитация...\n\nТы увидел вещее видение в Силе!")
         else:
@@ -566,7 +574,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(f"👤 {name}\n\n🎖 {get_rank(score)}\n⭐ Очки: {score}\n🪙 Монеты: {coins}\n📊 Точность: {acc} ({correct}/{total})\n🔥 Стрик: {streak} дн.\n🎴 Карточки: {len(owned)}/{len(CARDS)}", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⚔️ Квиз", callback_data="choose_level")],[InlineKeyboardButton("◀️ Меню", callback_data="menu")]]))
 
 # ─────────────────────────────────────────
-# ОБРАБОТКА ОТВЕТОВ И ДУЭЛЕЙ
+# ОБРАБОТКА ОТВЕТОВ И ДУЭЛЕЙ (ЛС И ГРУППЫ)
 # ─────────────────────────────────────────
 async def poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     answer = update.poll_answer
@@ -600,30 +608,28 @@ async def poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args: return await update.message.reply_text("Укажи код: /join КОД")
-    if update.effective_chat.type == 'private':
-        return await update.message.reply_text("❌ Дуэли проходят только в общих чатах! Добавь меня в беседу и введи команду там.")
     await join_duel_handler(update, context, context.args[0].upper())
 
-async def join_duel_handler(update, context, duel_id):
+async def join_duel_handler(update: Update, context: duel_id):
     user = update.effective_user
     get_user(user.id, user.username or user.first_name)
-    if update.effective_chat.type == 'private':
-        return await update.message.reply_text("❌ Дуэль проходит в группе!")
         
     duel = get_duel(duel_id)
     if not duel: return await update.message.reply_text("❌ Дуэль не найдена. Проверь код.")
     if duel["status"] != "waiting": return await update.message.reply_text("❌ Дуэль уже началась или завершена.")
     if duel["p1"] == user.id: return await update.message.reply_text("❌ Нельзя присоединиться к своей дуэли!")
 
-    chat_id = update.effective_chat.id
-    update_duel(duel_id, p2_id=user.id, status="active", chat_id=chat_id)
+    update_duel(duel_id, p2_id=user.id, status="active")
     duel = get_duel(duel_id)
     
     try: p1_name = (await context.bot.get_chat(duel["p1"])).first_name
     except: p1_name = "Игрок 1"
 
-    await update.message.reply_text(f"⚔️ {user.first_name} принял вызов {p1_name}!\n5 вопросов — удачи! ✨")
-    await send_duel_question(context, chat_id, duel_id, 0, duel)
+    await update.message.reply_text(f"⚔️ Ты принял вызов {p1_name}!\n5 вопросов — удачи! ✨")
+    
+    # Отправляем первый вопрос ОДНОВРЕМЕННО каждому в его личку (или группу)
+    await send_duel_question_ls(context, duel["p1"], duel_id, 0, duel)
+    await send_duel_question_ls(context, duel["p2"], duel_id, 0, duel)
 
 async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.photo:
