@@ -368,7 +368,7 @@ async def give_random_card(user_id, context, chat_id, chances_dict, source_text)
     won_card_id = random.choice(possible_cards)
     card = CARDS[won_card_id]
     is_new = won_card_id not in get_cards(user_id)
-    add_card(user.id, won_card_id)
+    add_card(user_id, won_card_id)
 
     rarity_names = {"common": "Обычная", "rare": "Редкая", "epic": "Эпическая", "legendary": "Легендарная"}
     text = f"🎁 {source_text}\n\n🎉 Выпала карточка!\n{card['emoji']} {card['name']}\nРедкость: {rarity_names[card['rarity']]}\n«{card['quote']}»"
@@ -406,9 +406,7 @@ async def send_duel_question(context, chat_id, duel_id, q_index, duel):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username or user.first_name)
-    if context.args and context.args[0].startswith("duel_"):
-        await join_duel_handler(update, context, context.args[0].replace("duel_",""))
-        return
+    
     kb = [
         [InlineKeyboardButton("⚔️ Квиз", callback_data="choose_level"), InlineKeyboardButton("🤺 Дуэль", callback_data="duel_menu")],
         [InlineKeyboardButton("🛒 Магазин", callback_data="shop"), InlineKeyboardButton("🎴 Коллекция", callback_data="collection")],
@@ -493,7 +491,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         kb = [[InlineKeyboardButton("⚔️ Создать дуэль", callback_data="duel_create")],[InlineKeyboardButton("🔗 Ввести код", callback_data="duel_code")],[InlineKeyboardButton("◀️ Назад", callback_data="menu")]]
         await q.edit_message_text("🤺 Дуэль с другом\n\nСоздай дуэль и отправь другу код!", reply_markup=InlineKeyboardMarkup(kb))
 
-    elif d == "duel_create":
+        elif d == "duel_create":
         kb = [[InlineKeyboardButton("🟢 Падаван", callback_data="duel_lvl_padawan")],[InlineKeyboardButton("🔵 Рыцарь", callback_data="duel_lvl_jedi")],[InlineKeyboardButton("🔴 Мастер", callback_data="duel_lvl_master")]]
         await q.edit_message_text("Выбери уровень дуэли:", reply_markup=InlineKeyboardMarkup(kb))
 
@@ -505,9 +503,7 @@ async def btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         c = conn.cursor()
         c.execute("INSERT INTO duels (duel_id,p1_id,p2_id,level,p1_score,p2_score,p1_index,p2_index,p1_done,p2_done,questions,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (duel_id, user.id, None, level, 0, 0, 0, 0, 0, 0, json.dumps(questions), "waiting"))
         conn.commit(); conn.close()
-        bot_info = await context.bot.get_me()
-        link = f"https://t.me/{bot_info.username}?start=duel_{duel_id}"
-        await q.edit_message_text(f"⚔️ Дуэль создана!\n\nУровень: {LEVEL_NAMES[level]}\nКод: {duel_id}\n\nОтправь другу ссылку:\n{link}", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Меню", callback_data="menu")]]))
+        await q.edit_message_text(f"⚔️ Дуэль создана!\n\nУровень: {LEVEL_NAMES[level]}\nКод: <code>{duel_id}</code>\n\n⚠️ Добавь бота в общую беседу и отправь другу команду:\n/join {duel_id}", parse_mode="HTML", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Меню", callback_data="menu")]]))
 
     elif d == "duel_code":
         await q.edit_message_text("Введи команду:\n/join КОД", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Назад", callback_data="duel_menu")]]))
@@ -612,29 +608,36 @@ async def poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try: await context.bot.send_message(user_id, f"{result_text}\n\n🏁 Квиз завершён!\nЗаработано: {new_coins} монет 🪙", reply_markup=InlineKeyboardMarkup(kb))
         except: pass
 
-async def join_duel_handler(update, context, duel_id):
+async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args: return await update.message.reply_text("Укажи код: /join КОД")
+    if update.effective_chat.type == 'private':
+        return await update.message.reply_text("❌ Дуэли проходят только в общих чатах! Добавь меня в беседу и введи команду там.")
+    await join_duel_handler(update, context, context.args[0].upper())
+
+async def join_duel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username or user.first_name)
+    if update.effective_chat.type == 'private':
+        return await update.message.reply_text("❌ Дуэль проходит в группе!")
+        
     duel = get_duel(duel_id)
-    if not duel: return await update.message.reply_text("❌ Дуэль не найдена.")
-    if duel["status"] != "waiting": return await update.message.reply_text("❌ Дуэль уже началась.")
+    if not duel: return await update.message.reply_text("❌ Дуэль не найдена. Проверь код.")
+    if duel["status"] != "waiting": return await update.message.reply_text("❌ Дуэль уже началась или завершена.")
     if duel["p1"] == user.id: return await update.message.reply_text("❌ Нельзя присоединиться к своей дуэли!")
+
     chat_id = update.effective_chat.id
     update_duel(duel_id, p2_id=user.id, status="active", chat_id=chat_id)
     duel = get_duel(duel_id)
+    
     try: p1_name = (await context.bot.get_chat(duel["p1"])).first_name
-    except: p1_name = "соперник"
+    except: p1_name = "Игрок 1"
+
     await update.message.reply_text(f"⚔️ {user.first_name} принял вызов {p1_name}!\n5 вопросов — удачи! ✨")
     await send_duel_question(context, chat_id, duel_id, 0, duel)
-
-async def join_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not context.args: return await update.message.reply_text("Укажи код: /join КОД")
-    await join_duel_handler(update, context, context.args[0].upper())
 
 async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.photo:
         await update.message.reply_text(f"file_id:\n`{update.message.photo[-1].file_id}`", parse_mode="Markdown")
-
 def main():
     time.sleep(5)
     init_db()
