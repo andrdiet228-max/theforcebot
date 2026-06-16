@@ -66,7 +66,7 @@ def get_user(user_id, username=""):
     conn = sqlite3.connect("quiz.db")
     c = conn.cursor()
     c.execute("INSERT OR IGNORE INTO users (user_id, username) VALUES (?,?)", (user_id, username))
-    c.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
+    c.execute("SELECT user_id, username, score, coins, streak, last_play, total, correct, last_daily, last_meditate FROM users WHERE user_id=?", (user_id,))
     row = c.fetchone()
     conn.commit()
     conn.close()
